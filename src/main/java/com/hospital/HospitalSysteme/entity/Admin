@@ -1,0 +1,60 @@
+L Entity Admin pourrai être comme ça :
+
+
+@Entity
+@Table(name = "admins")
+@DiscriminatorValue("ADMIN")
+public class Admin extends User {
+
+    // Type d'administrateur (SYSTÈME, SÉCURITÉ, DONNÉES, etc.)
+    @Column(name = "type_admin", length = 50)
+    private String typeAdmin;
+
+    // Date de dernière modification des droits d'accès
+    @Column(name = "derniere_modification_droits")
+    private LocalDateTime derniereModificationDroits;
+
+    // Indique si l'admin est super-administrateur (a accès à tout)
+    @Column(name = "super_admin")
+    private boolean superAdmin = true;
+
+    // Département(s) géré(s) par l'administrateur
+    @ManyToMany
+    @JoinTable(
+        name = "admin_departements",
+        joinColumns = @JoinColumn(name = "admin_id"),
+        inverseJoinColumns = @JoinColumn(name = "departement_id")
+    )
+    private Set<Departement> departementsGeres = new HashSet<>();
+
+    // Journal des actions administratives
+    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
+    private List<JournalAdmin> journalActions = new ArrayList<>();
+}
+
+
+
+
+
+En ajoutant une autre table qui est : journal_admin
+
+@Entity
+@Table(name = "journal_admin")
+public class JournalAdmin {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "date_action", nullable = false)
+    private LocalDateTime dateAction;
+
+    @Column(name = "type_action", length = 50, nullable = false)
+    private String typeAction;
+
+    @Column(name = "description", nullable = false)
+    private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "admin_id", nullable = false)
+    private Admin admin;
+}

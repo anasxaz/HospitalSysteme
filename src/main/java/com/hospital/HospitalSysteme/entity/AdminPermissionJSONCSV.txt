@@ -1,0 +1,102 @@
+Entity Permission :
+
+
+@Entity
+@Table(name = "permissions")
+public class Permission {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "nom", length = 50, nullable = false, unique = true)
+    private String nom;
+
+    @Column(name = "description")
+    private String description;
+
+    @ManyToMany(mappedBy = "permissions")
+    private Set<Admin> admins = new HashSet<>();
+}
+
+
+Modification ta3 l'Admin :
+
+@Entity
+@Table(name = "admins")
+@DiscriminatorValue("ADMIN")
+public class Admin extends User {
+    @Column(name = "niveau_acces", nullable = false)
+    private int niveauAcces;
+
+    @ManyToMany
+    @JoinTable(
+        name = "admin_permissions",
+        joinColumns = @JoinColumn(name = "admin_id"),
+        inverseJoinColumns = @JoinColumn(name = "permission_id")
+    )
+    private Set<Permission> permissions = new HashSet<>();
+
+    // Méthodes utilitaires
+    public void addPermission(Permission permission) {
+        this.permissions.add(permission);
+        permission.getAdmins().add(this);
+    }
+
+    public void removePermission(Permission permission) {
+        this.permissions.remove(permission);
+        permission.getAdmins().remove(this);
+    }
+}
+
+
+
+
+Sinon kayna had la méthode bach t7wl l permissions d l'Admin l JSON/CSV :
+
+@Entity
+@Table(name = "admins")
+@DiscriminatorValue("ADMIN")
+public class Admin extends User {
+    @Column(name = "permissions", nullable = false, columnDefinition = "TEXT")
+    private String permissions; // Stocké comme JSON
+
+    @Column(name = "niveau_acces", nullable = false)
+    private int niveauAcces;
+
+    // Méthodes utilitaires pour manipuler les permissions
+    public List<String> getPermissionsList() {
+        if (permissions == null || permissions.isEmpty()) {
+            return new ArrayList<>();
+        }
+        // Utiliser Jackson ou Gson pour convertir JSON en List
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(permissions, new TypeReference<List<String>>(){});
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public void setPermissionsList(List<String> permissionsList) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            this.permissions = mapper.writeValueAsString(permissionsList);
+        } catch (Exception e) {
+            this.permissions = "[]";
+        }
+    }
+
+    public void addPermission(String permission) {
+        List<String> perms = getPermissionsList();
+        if (!perms.contains(permission)) {
+            perms.add(permission);
+            setPermissionsList(perms);
+        }
+    }
+
+    public void removePermission(String permission) {
+        List<String> perms = getPermissionsList();
+        perms.remove(permission);
+        setPermissionsList(perms);
+    }
+}
