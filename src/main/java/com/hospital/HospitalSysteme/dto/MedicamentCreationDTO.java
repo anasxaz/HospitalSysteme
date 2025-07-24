@@ -20,6 +20,12 @@ public class MedicamentCreationDTO {
     @NotBlank(message = "Le dosage est obligatoire")
     private String dosage;
 
+    @NotBlank(message = "Les effets secondaires sont obligatoires")
+    private String effetsSecondaires;  // Ajouté
+
+    @NotBlank(message = "Les contre-indications sont obligatoires")
+    private String contreIndications;  // Ajouté
+
     private String fabricant;
     private String categorie;
     private Boolean ordonnanceRequise;

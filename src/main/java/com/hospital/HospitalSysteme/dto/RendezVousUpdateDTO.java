@@ -20,4 +20,7 @@ public class RendezVousUpdateDTO {
     private String motif;
     private String notes;
 
+    private Long patientId;
+    private Long medecinId;
+
 }

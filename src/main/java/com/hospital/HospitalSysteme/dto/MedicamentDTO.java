@@ -20,6 +20,8 @@ public class MedicamentDTO {
     private String dosage;
     private String fabricant;
     private String categorie;
+    private String contreIndications;
+    private String effetsSecondaires;
 //    private BigDecimal prix;
 //    private int stockDisponible;
     private Boolean ordonnanceRequise;

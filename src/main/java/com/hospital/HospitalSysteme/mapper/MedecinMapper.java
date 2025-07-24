@@ -3,6 +3,7 @@ package com.hospital.HospitalSysteme.mapper;
 import com.hospital.HospitalSysteme.dto.MedecinDTO;
 import com.hospital.HospitalSysteme.dto.MedecinCreationDTO;
 import com.hospital.HospitalSysteme.entity.Medecin;
+import com.hospital.HospitalSysteme.exception.ResourceNotFoundException;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,4 +32,6 @@ public abstract class MedecinMapper {
     @Mapping(target = "consultations", ignore = true)
     @Mapping(target = "password", expression = "java(passwordEncoder.encode(medecinCreationDTO.getPassword()))")
     public abstract Medecin toEntity(MedecinCreationDTO medecinCreationDTO);
+
+
 }

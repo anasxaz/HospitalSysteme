@@ -4,6 +4,7 @@ import com.hospital.HospitalSysteme.dto.RendezVousCreationDTO;
 import com.hospital.HospitalSysteme.dto.RendezVousDTO;
 import com.hospital.HospitalSysteme.dto.RendezVousUpdateDTO;
 import com.hospital.HospitalSysteme.entity.Medecin;
+import com.hospital.HospitalSysteme.entity.Patient;
 import com.hospital.HospitalSysteme.entity.RendezVous;
 import com.hospital.HospitalSysteme.entity.enums.StatutRendezVous;
 import com.hospital.HospitalSysteme.exception.ResourceNotFoundException;
@@ -13,9 +14,12 @@ import com.hospital.HospitalSysteme.mapper.PrescriptionMapper;
 import com.hospital.HospitalSysteme.mapper.RendezVousMapper;
 import com.hospital.HospitalSysteme.repository.*;
 import com.hospital.HospitalSysteme.service.RendezVousService;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,19 +40,76 @@ public class RendezVousServiceImpl implements RendezVousService {
 
 
 
+//    @Override
+//    public RendezVousDTO createRendezVous(RendezVousCreationDTO rendezVousCreationDTO) {
+//        log.info("Création d'un nouveau rendez-vous le : {}", rendezVousCreationDTO.getDateHeure());
+//
+//        // Convert rendezVousCreationDTO to rendez vous JPA Entity
+//        RendezVous rendezVous = rendezVousMapper.toEntity(rendezVousCreationDTO);
+//
+//        // rendez vous JPA Entity
+//        RendezVous savedRendezVous = rendezVousRepository.save(rendezVous);
+//
+//        log.info("Rendez-vous créé avec succès avec l'ID : {}", savedRendezVous.getId());
+//
+//        // Convert saved rendez vous JPA Entity into DTO object
+//        return rendezVousMapper.toDTO(savedRendezVous);
+//    }
+
+//    @Override
+//    public RendezVousDTO createRendezVous(RendezVousCreationDTO rendezVousCreationDTO) {
+//        log.info("Création d'un nouveau rendez-vous le : {}", rendezVousCreationDTO.getDateHeure());
+//
+//        // Récupérer le médecin et le patient à partir de leurs IDs
+//        Medecin medecin = medecinRepository.findById(rendezVousCreationDTO.getMedecinId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Médecin non trouvé avec l'ID : " + rendezVousCreationDTO.getMedecinId()));
+//
+//        Patient patient = patientRepository.findById(rendezVousCreationDTO.getPatientId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Patient non trouvé avec l'ID : " + rendezVousCreationDTO.getPatientId()));
+//
+//        // Convert rendezVousCreationDTO to rendez vous JPA Entity
+//        RendezVous rendezVous = rendezVousMapper.toEntity(rendezVousCreationDTO);
+//
+//        // Set medecin and patient explicitly
+//        rendezVous.setMedecin(medecin);
+//        rendezVous.setPatient(patient);
+//
+//        // Set default status if not provided
+//        if (rendezVous.getStatut() == null) {
+//            rendezVous.setStatut(StatutRendezVous.PROGRAMME);
+//        }
+//
+//        // rendez vous JPA Entity
+//        RendezVous savedRendezVous = rendezVousRepository.save(rendezVous);
+//
+//        log.info("Rendez-vous créé avec succès avec l'ID : {}", savedRendezVous.getId());
+//
+//        // Convert saved rendez vous JPA Entity into DTO object
+//        return rendezVousMapper.toDTO(savedRendezVous);
+//    }
+
     @Override
     public RendezVousDTO createRendezVous(RendezVousCreationDTO rendezVousCreationDTO) {
         log.info("Création d'un nouveau rendez-vous le : {}", rendezVousCreationDTO.getDateHeure());
 
-        // Convert rendezVousCreationDTO to rendez vous JPA Entity
+        // Convertir DTO en entité (sans médecin et patient)
         RendezVous rendezVous = rendezVousMapper.toEntity(rendezVousCreationDTO);
 
-        // rendez vous JPA Entity
-        RendezVous savedRendezVous = rendezVousRepository.save(rendezVous);
+        // Récupérer et définir explicitement le médecin
+        Medecin medecin = medecinRepository.findById(rendezVousCreationDTO.getMedecinId())
+                .orElseThrow(() -> new ResourceNotFoundException("Médecin non trouvé avec l'ID : " + rendezVousCreationDTO.getMedecinId()));
+        rendezVous.setMedecin(medecin);
 
+        // Récupérer et définir explicitement le patient
+        Patient patient = patientRepository.findById(rendezVousCreationDTO.getPatientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient non trouvé avec l'ID : " + rendezVousCreationDTO.getPatientId()));
+        rendezVous.setPatient(patient);
+
+        // Sauvegarder l'entité
+        RendezVous savedRendezVous = rendezVousRepository.save(rendezVous);
         log.info("Rendez-vous créé avec succès avec l'ID : {}", savedRendezVous.getId());
 
-        // Convert saved rendez vous JPA Entity into DTO object
+        // Convertir l'entité sauvegardée en DTO
         return rendezVousMapper.toDTO(savedRendezVous);
     }
 

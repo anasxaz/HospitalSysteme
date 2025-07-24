@@ -12,9 +12,12 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MedicamentUpdateDTO {
+    private String nom;  // Ajouté
     private String description;
     private String dosage;
     private String fabricant;
     private String categorie;
+    private String effetsSecondaires;  // Ajouté
+    private String contreIndications;  // Ajouté
     private boolean ordonnanceRequise;
 }
