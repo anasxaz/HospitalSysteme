@@ -1,9 +1,6 @@
 package com.hospital.HospitalSysteme.service;
 
-import com.hospital.HospitalSysteme.dto.AuthenticationRequestDTO;
-import com.hospital.HospitalSysteme.dto.AuthenticationResponseDTO;
-import com.hospital.HospitalSysteme.dto.PasswordResetRequestDTO;
-import com.hospital.HospitalSysteme.dto.PasswordUpdateDTO;
+import com.hospital.HospitalSysteme.dto.*;
 
 public interface AuthentificationService {
     // Authentification
@@ -19,4 +16,7 @@ public interface AuthentificationService {
     boolean validateToken(String token);
     Long getUserIdFromToken(String token);
     String getRoleFromToken(String token);
+
+    // Pour se connecter
+//    AuthenticationResponseDTO register(UserCreationDTO userCreationDTO);
 }

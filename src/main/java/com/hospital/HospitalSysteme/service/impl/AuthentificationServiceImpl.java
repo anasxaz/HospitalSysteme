@@ -4,9 +4,12 @@ import com.hospital.HospitalSysteme.dto.AuthenticationRequestDTO;
 import com.hospital.HospitalSysteme.dto.AuthenticationResponseDTO;
 import com.hospital.HospitalSysteme.dto.PasswordResetRequestDTO;
 import com.hospital.HospitalSysteme.dto.PasswordUpdateDTO;
+import com.hospital.HospitalSysteme.entity.Patient;
 import com.hospital.HospitalSysteme.entity.User;
+import com.hospital.HospitalSysteme.entity.enums.GroupeSanguin;
 import com.hospital.HospitalSysteme.exception.AuthenticationException;
 import com.hospital.HospitalSysteme.exception.ResourceNotFoundException;
+import com.hospital.HospitalSysteme.repository.PatientRepository;
 import com.hospital.HospitalSysteme.repository.UserRepository;
 import com.hospital.HospitalSysteme.security.JwtTokenProvider;
 import com.hospital.HospitalSysteme.service.AuthentificationService;
@@ -18,7 +21,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.hospital.HospitalSysteme.dto.UserCreationDTO;
+import com.hospital.HospitalSysteme.entity.enums.ProfilUser;
 
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -27,6 +33,7 @@ import java.util.UUID;
 @Slf4j
 public class AuthentificationServiceImpl implements AuthentificationService {
 
+    private final PatientRepository patientRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
@@ -163,12 +170,88 @@ public class AuthentificationServiceImpl implements AuthentificationService {
     @Override
     public Long getUserIdFromToken(String token) {
         log.info("Récupération de l'ID utilisateur à partir du token");
-        return jwtTokenProvider.getUserIdFromToken(token);
+        try {
+            return jwtTokenProvider.getUserIdFromToken(token);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Erreur lors de la récupération de l'ID utilisateur à partir du token", e);
+            throw new AuthenticationException("Erreur lors de la validation du token");
+        }
     }
 
     @Override
     public String getRoleFromToken(String token) {
         log.info("Récupération du rôle à partir du token");
-        return jwtTokenProvider.getRoleFromToken(token);
+        try {
+            return jwtTokenProvider.getRoleFromToken(token);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Erreur lors de la récupération du rôle à partir du token", e);
+            throw new AuthenticationException("Erreur lors de la validation du token");
+        }
     }
+
+//    @Override
+//    public AuthenticationResponseDTO register(UserCreationDTO userCreationDTO) {
+//        log.info("Inscription d'un nouvel utilisateur avec l'email : {}", userCreationDTO.getEmail());
+//
+//        // Vérifier si l'email existe déjà
+//        if (userRepository.existsByEmail(userCreationDTO.getEmail())) {
+//            throw new IllegalArgumentException("Cet email est déjà utilisé");
+//        }
+//
+//        // Créer un nouvel utilisateur (Patient par défaut)
+//        Patient patient = new Patient();
+//        patient.setNom(userCreationDTO.getNom());
+//        patient.setPrenom(userCreationDTO.getPrenom());
+//        patient.setEmail(userCreationDTO.getEmail());
+//        patient.setPassword(passwordEncoder.encode(userCreationDTO.getPassword()));
+//        patient.setTelephone(userCreationDTO.getTelephone());
+//        patient.setAdresse(userCreationDTO.getAdresse());
+//        patient.setDateNaissance(userCreationDTO.getDateNaissance());
+//        patient.setGenre(userCreationDTO.getGenre());
+//        patient.setProfil(ProfilUser.PATIENT); // Par défaut, les nouveaux inscrits sont des patients
+//
+//        // Définir les champs obligatoires de Patient
+//        patient.setAllergies("Aucune"); // Valeur par défaut
+//        patient.setAntecedentsMedicaux("Aucun"); // Valeur par défaut
+//        patient.setContactUrgenceNom(""); // Valeur par défaut
+//        patient.setContactUrgenceTelephone(""); // Valeur par défaut
+//        patient.setGroupeSanguin(GroupeSanguin.INCONNU); // Valeur par défaut
+//        patient.setNumeroAssurance(""); // Valeur par défaut
+//
+//        // Sauvegarder l'utilisateur
+//        Patient savedPatient = patientRepository.save(patient);
+//
+//        try {
+//            // Créer un token pour l'utilisateur
+//            Authentication authentication = authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(
+//                            userCreationDTO.getEmail(),
+//                            userCreationDTO.getPassword() // Utiliser le mot de passe non encodé ici
+//                    )
+//            );
+//
+//            SecurityContextHolder.getContext().setAuthentication(authentication);
+//
+//            String token = jwtTokenProvider.generateToken(authentication);
+//
+//            // Calculer la date d'expiration
+//            LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
+//
+//            log.info("Inscription réussie pour l'utilisateur : {}", userCreationDTO.getEmail());
+//
+//            return new AuthenticationResponseDTO(
+//                    token,
+//                    null,
+//                    savedPatient.getId(),
+//                    savedPatient.getNom(),
+//                    savedPatient.getPrenom(),
+//                    savedPatient.getEmail(),
+//                    savedPatient.getProfil().name(),
+//                    expiresAt
+//            );
+//        } catch (NoSuchAlgorithmException e) {
+//            log.error("Erreur lors de la génération du token pour le nouvel utilisateur", e);
+//            throw new AuthenticationException("Erreur lors de l'inscription");
+//        }
+//    }
 }

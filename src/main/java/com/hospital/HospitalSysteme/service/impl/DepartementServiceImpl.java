@@ -33,6 +33,7 @@ public class DepartementServiceImpl implements DepartementService {
     private final InfirmierRepository infirmierRepository;
     private final ConsultationRepository consultationRepository;
     private final PatientRepository patientRepository;
+    private final PersonnelRepository personnelRepository;
 
 
 
@@ -88,25 +89,58 @@ public class DepartementServiceImpl implements DepartementService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public DepartementDTO updateDepartement(Long departementId, DepartementUpdateDTO departementUpdateDTO) {
-        log.info("Mise à jour du département avec l'ID : {}", departementId);
+//    @Override
+//    public DepartementDTO updateDepartement(Long departementId, DepartementUpdateDTO departementUpdateDTO) {
+//        log.info("Mise à jour du département avec l'ID : {}", departementId);
+//
+//        // Retrieve the département
+//        Departement departement = departementRepository.findById(departementId).orElseThrow(
+//                () -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + departementId)
+//        );
+//
+//        // Mettre à jour les infos
+//        departementMapper.updateDepartementFromDTO(departementUpdateDTO, departement);
+//
+//        // Sauvegarder l'update
+//        Departement departementUpdated = departementRepository.save(departement);
+//
+//        log.info("Département mis à jour avec succès");
+//
+//        return departementMapper.toDTO(departementUpdated);
+//    }
+@Override
+public DepartementDTO updateDepartement(Long departementId, DepartementUpdateDTO departementUpdateDTO) {
+    log.info("Mise à jour du département avec l'ID : {}", departementId);
 
-        // Retrieve the département
-        Departement departement = departementRepository.findById(departementId).orElseThrow(
-                () -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + departementId)
-        );
+    // Retrieve the département
+    Departement departement = departementRepository.findById(departementId).orElseThrow(
+            () -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + departementId)
+    );
 
-        // Mettre à jour les infos
-        departementMapper.updateDepartementFromDTO(departementUpdateDTO, departement);
+    // Mettre à jour les infos de base via le mapper
+    departementMapper.updateDepartementFromDTO(departementUpdateDTO, departement);
 
-        // Sauvegarder l'update
-        Departement departementUpdated = departementRepository.save(departement);
-
-        log.info("Département mis à jour avec succès");
-
-        return departementMapper.toDTO(departementUpdated);
+    // Gérer manuellement le chef de département
+    if (departementUpdateDTO.getChefDepartementId() != null) {
+        if (departementUpdateDTO.getChefDepartementId() > 0) {
+            // Rechercher le personnel qui sera chef de département
+            Personnel personnel = personnelRepository.findById(departementUpdateDTO.getChefDepartementId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Personnel non trouvé avec l'ID : " +
+                            departementUpdateDTO.getChefDepartementId()));
+            departement.setChefDepartement(personnel);
+        } else {
+            // Si l'ID est 0, on retire le chef de département
+            departement.setChefDepartement(null);
+        }
     }
+
+    // Sauvegarder l'update
+    Departement departementUpdated = departementRepository.save(departement);
+
+    log.info("Département mis à jour avec succès");
+
+    return departementMapper.toDTO(departementUpdated);
+}
 
     @Override
     public void deleteDepartement(Long departementId) {
@@ -237,5 +271,41 @@ public class DepartementServiceImpl implements DepartementService {
         return departements.stream()
                 .map(departementMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+
+
+    @Override
+    public DepartementDTO assignerChefDepartement(Long departementId, Long personnelId) {
+        log.info("Assignation du chef de département avec l'ID personnel : {} au département avec l'ID : {}",
+                personnelId, departementId);
+
+        // Récupérer le département
+        Departement departement = departementRepository.findById(departementId)
+                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + departementId));
+
+        // Si personnelId est 0, on retire le chef de département
+        if (personnelId == 0) {
+            departement.setChefDepartement(null);
+            log.info("Chef de département retiré pour le département avec l'ID : {}", departementId);
+        } else {
+            // Récupérer le personnel
+            Personnel personnel = personnelRepository.findById(personnelId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Personnel non trouvé avec l'ID : " + personnelId));
+
+            // Vérifier que le personnel appartient au même département
+            if (personnel.getDepartement() == null || !personnel.getDepartement().getId().equals(departementId)) {
+                throw new IllegalArgumentException("Le personnel doit appartenir au département pour être assigné comme chef");
+            }
+
+            // Assigner le chef de département
+            departement.setChefDepartement(personnel);
+            log.info("Chef de département assigné avec succès");
+        }
+
+        // Sauvegarder les modifications
+        Departement updatedDepartement = departementRepository.save(departement);
+
+        return departementMapper.toDTO(updatedDepartement);
     }
 }

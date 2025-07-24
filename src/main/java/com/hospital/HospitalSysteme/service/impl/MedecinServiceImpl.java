@@ -2,14 +2,17 @@ package com.hospital.HospitalSysteme.service.impl;
 
 import com.hospital.HospitalSysteme.dto.*;
 import com.hospital.HospitalSysteme.entity.*;
+import com.hospital.HospitalSysteme.entity.enums.ProfilUser;
 import com.hospital.HospitalSysteme.exception.ResourceNotFoundException;
 import com.hospital.HospitalSysteme.mapper.*;
 import com.hospital.HospitalSysteme.repository.*;
 import com.hospital.HospitalSysteme.service.MedecinService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +30,8 @@ public class MedecinServiceImpl implements MedecinService {
     private RendezVousRepository rendezVousRepository;
     private ConsultationRepository consultationRepository;
     private PrescriptionRepository prescriptionRepository;
+    private DepartementRepository departementRepository;
+    private PasswordEncoder passwordEncoder;
 
     private MedecinMapper medecinMapper;
     private RendezVousMapper rendezVousMapper;
@@ -37,9 +42,82 @@ public class MedecinServiceImpl implements MedecinService {
 
 
 
+//    @Override
+//    public MedecinDTO createMedecin(MedecinCreationDTO medecinCreationDTO) {
+//        log.info("Création d'un nouveau médecin avec l'email : {}", medecinCreationDTO.getEmail());
+//
+//        // Vérifier si l'email existe déjà
+//        if (medecinRepository.existsByEmail(medecinCreationDTO.getEmail())) {
+//            throw new IllegalArgumentException("Un médecin avec cet email existe déjà : " + medecinCreationDTO.getEmail());
+//        }
+//
+//        // Récupérer le département
+//        Departement departement = departementRepository.findById(medecinCreationDTO.getDepartementId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + medecinCreationDTO.getDepartementId()));
+//
+//        // Convert medecinCreationDTO to Medecin JPA Entity
+//        Medecin medecin = medecinMapper.toEntity(medecinCreationDTO);
+//
+//        // Définir les attributs de Personnel
+//        medecin.setDepartement(departement);
+//        medecin.setPoste("Médecin " + medecinCreationDTO.getSpecialite());
+//        medecin.setDateEmbauche(LocalDate.now()); // Ou utilisez une date du DTO si disponible
+//        medecin.setSalaire(new BigDecimal("0")); // Ou utilisez une valeur du DTO si disponible
+//
+//        // Enregistrer le médecin
+//        Medecin savedMedecin = medecinRepository.save(medecin);
+//
+//        log.info("Médecin créé avec succès avec l'ID : {}", savedMedecin.getId());
+//
+//        // Convert saved medecin JPA Entity into DTO object
+//        return medecinMapper.toDTO(savedMedecin);
+//    }
+
+//    @Override
+//    public MedecinDTO createMedecin(MedecinCreationDTO medecinCreationDTO) {
+//        log.info("Création d'un nouveau médecin avec l'email : {}", medecinCreationDTO.getEmail());
+//
+//        // Vérifier si l'email existe déjà
+//        if (medecinRepository.existsByEmail(medecinCreationDTO.getEmail())) {
+//            throw new IllegalArgumentException("Un médecin avec cet email existe déjà : " + medecinCreationDTO.getEmail());
+//        }
+//
+//        // Récupérer le département
+//        Departement departement = departementRepository.findById(medecinCreationDTO.getDepartementId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + medecinCreationDTO.getDepartementId()));
+//
+//        // Convert medecinCreationDTO to Medecin JPA Entity
+//        Medecin medecin = medecinMapper.toEntity(medecinCreationDTO);
+//
+//        // Encoder manuellement le mot de passe si le mapper ne le fait pas
+//        if (medecin.getPassword() == null || medecin.getPassword().equals(medecinCreationDTO.getPassword())) {
+//            medecin.setPassword(passwordEncoder.encode(medecinCreationDTO.getPassword()));
+//        }
+//
+//        // Définir les attributs de Personnel
+//        medecin.setDepartement(departement);
+//        medecin.setPoste(medecinCreationDTO.getPoste() != null ?
+//                medecinCreationDTO.getPoste() :
+//                "Médecin " + medecinCreationDTO.getSpecialite());
+//        medecin.setDateEmbauche(medecinCreationDTO.getDateEmbauche() != null ?
+//                medecinCreationDTO.getDateEmbauche() :
+//                LocalDate.now());
+//        medecin.setSalaire(medecinCreationDTO.getSalaire() != null ?
+//                medecinCreationDTO.getSalaire() :
+//                new BigDecimal("0"));
+//
+//        // Enregistrer le médecin
+//        Medecin savedMedecin = medecinRepository.save(medecin);
+//
+//        log.info("Médecin créé avec succès avec l'ID : {}", savedMedecin.getId());
+//
+//        // Convert saved medecin JPA Entity into DTO object
+//        return medecinMapper.toDTO(savedMedecin);
+//    }
+
+
     @Override
     public MedecinDTO createMedecin(MedecinCreationDTO medecinCreationDTO) {
-
         log.info("Création d'un nouveau médecin avec l'email : {}", medecinCreationDTO.getEmail());
 
         // Vérifier si l'email existe déjà
@@ -47,16 +125,43 @@ public class MedecinServiceImpl implements MedecinService {
             throw new IllegalArgumentException("Un médecin avec cet email existe déjà : " + medecinCreationDTO.getEmail());
         }
 
-        // Convert medecinCreationDTO to patient JPA Entity
+        // Convert medecinCreationDTO to Medecin JPA Entity
         Medecin medecin = medecinMapper.toEntity(medecinCreationDTO);
 
-        // patient JPA Entity
-        Medecin savedMedecin = medecinRepository.save(medecin);
+        // Encoder manuellement le mot de passe si le mapper ne le fait pas
+        if (medecin.getPassword() == null || medecin.getPassword().equals(medecinCreationDTO.getPassword())) {
+            medecin.setPassword(passwordEncoder.encode(medecinCreationDTO.getPassword()));
+        }
 
-        log.info("Médecin créé avec succès avec l'ID : {}", savedMedecin.getId());
+        try {
+            // Récupérer le département
+            Departement departement = departementRepository.findById(medecinCreationDTO.getDepartementId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + medecinCreationDTO.getDepartementId()));
 
-        // Convert saved medecin JPA Entity into DTO object
-        return medecinMapper.toDTO(savedMedecin);
+            // Définir les attributs de Personnel
+            medecin.setDepartement(departement);
+            medecin.setPoste(medecinCreationDTO.getPoste() != null ?
+                    medecinCreationDTO.getPoste() :
+                    "Médecin " + medecinCreationDTO.getSpecialite());
+            medecin.setDateEmbauche(medecinCreationDTO.getDateEmbauche() != null ?
+                    medecinCreationDTO.getDateEmbauche() :
+                    LocalDate.now());
+            medecin.setSalaire(medecinCreationDTO.getSalaire() != null ?
+                    medecinCreationDTO.getSalaire() :
+                    new BigDecimal("0"));
+            medecin.setProfil(ProfilUser.PERSONNEL);
+
+            // Enregistrer le médecin
+            Medecin savedMedecin = medecinRepository.save(medecin);
+
+            log.info("Médecin créé avec succès avec l'ID : {}", savedMedecin.getId());
+
+            // Convert saved medecin JPA Entity into DTO object
+            return medecinMapper.toDTO(savedMedecin);
+        } catch (Exception e) {
+            log.error("Erreur lors de la création du médecin : {}", e.getMessage(), e);
+            throw new RuntimeException("Erreur lors de la création du médecin : " + e.getMessage(), e);
+        }
     }
 
     @Override

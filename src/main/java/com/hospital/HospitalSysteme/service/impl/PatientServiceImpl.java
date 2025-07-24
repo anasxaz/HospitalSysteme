@@ -6,6 +6,7 @@ import com.hospital.HospitalSysteme.entity.Facture;
 import com.hospital.HospitalSysteme.entity.Patient;
 import com.hospital.HospitalSysteme.entity.RendezVous;
 import com.hospital.HospitalSysteme.entity.enums.GroupeSanguin;
+import com.hospital.HospitalSysteme.entity.enums.ProfilUser;
 import com.hospital.HospitalSysteme.entity.enums.StatutPaiement;
 import com.hospital.HospitalSysteme.exception.ResourceNotFoundException;
 import com.hospital.HospitalSysteme.mapper.*;
@@ -13,6 +14,7 @@ import com.hospital.HospitalSysteme.repository.*;
 import com.hospital.HospitalSysteme.service.PatientService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -43,23 +45,35 @@ public class PatientServiceImpl implements PatientService {
     private PrescriptionMapper prescriptionMapper;
     private PlanDeSoinsMapper planDeSoinsMapper;
     private FactureMapper factureMapper;
+    private PasswordEncoder passwordEncoder;
 
 
 
 
     @Override
     public PatientDTO createPatient(PatientCreationDTO patientCreationDTO) {
-
         log.info("Création d'un nouveau patient avec l'email : {}", patientCreationDTO.getEmail());
 
         // Vérifier si l'email existe déjà
-
         if (patientRepository.existsByEmail(patientCreationDTO.getEmail())) {
             throw new IllegalArgumentException("Un patient avec cet email existe déjà : " + patientCreationDTO.getEmail());
         }
 
         // Convert patientCreationDTO to patient JPA Entity
         Patient patient = patientMapper.toEntity(patientCreationDTO);
+
+        // Encoder le mot de passe
+        patient.setPassword(passwordEncoder.encode(patientCreationDTO.getPassword()));
+
+        // Définir explicitement le profil
+        patient.setProfil(ProfilUser.PATIENT);
+
+        // Créer un dossier médical vide si nécessaire
+        if (patient.getDossierMedical() == null) {
+            DossierMedical dossierMedical = new DossierMedical();
+            dossierMedical.setPatient(patient);
+            patient.setDossierMedical(dossierMedical);
+        }
 
         // patient JPA Entity
         Patient savedPatient = patientRepository.save(patient);

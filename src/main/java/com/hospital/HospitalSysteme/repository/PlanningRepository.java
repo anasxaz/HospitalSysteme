@@ -24,22 +24,24 @@ public interface PlanningRepository extends JpaRepository<Planning, Long> {
     @Query("SELECT p.statut, COUNT(p) FROM Planning p GROUP BY p.statut")
     List<Object[]> countByAllStatuts();
 
-    @Query("SELECT d.nom, COUNT(p) FROM Planning p JOIN p.departement d GROUP BY d.nom")
+//    @Query("SELECT d.nom, COUNT(p) FROM Planning p JOIN p.departement d GROUP BY d.nom")
+//    List<Object[]> countByDepartement();
+    @Query("SELECT d.nom, COUNT(DISTINCT p) FROM Planning p JOIN p.cadreAdministratifs ca JOIN ca.departement d GROUP BY d.nom")
     List<Object[]> countByDepartement();
 
-    @Query("SELECT p FROM Planning p WHERE p.statut IN ('PUBLIE', 'EN_COURS') AND p.departementId = :departementId")
+//    @Query("SELECT p FROM Planning p WHERE p.statut IN ('PUBLIE', 'EN_COURS') AND p.departementId = :departementId")
+//    List<Planning> findActifsByDepartementId(@Param("departementId") Long departementId);
+//    @Query("SELECT p FROM Planning p WHERE p.statut IN ('PUBLIE', 'EN_COURS') AND p.departement.id = :departementId")
+//    List<Planning> findActifsByDepartementId(@Param("departementId") Long departementId);
+//    @Query("SELECT DISTINCT p FROM Planning p JOIN p.cadreAdministratifs ca WHERE p.statut IN ('PUBLIE', 'EN_COURS') AND ca.departement.id = :departementId")
+//    List<Planning> findActifsByDepartementId(@Param("departementId") Long departementId);
+    @Query("SELECT DISTINCT p FROM Planning p JOIN p.cadreAdministratifs ca WHERE p.statut IN ('PUBLIE', 'EN_COURS') AND ca.departement.id = :departementId")
     List<Planning> findActifsByDepartementId(@Param("departementId") Long departementId);
 
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Planning p " +
-            "WHERE p.departementId = :departementId " +
-            "AND ((p.dateDebut BETWEEN :dateDebut AND :dateFin) OR (p.dateFin BETWEEN :dateDebut AND :dateFin) " +
-            "OR (:dateDebut BETWEEN p.dateDebut AND p.dateFin)) " +
-            "AND (p.id <> :planningIdToExclude OR :planningIdToExclude IS NULL)")
-    boolean existsChevauchement(
-            @Param("dateDebut") LocalDate dateDebut,
-            @Param("dateFin") LocalDate dateFin,
-            @Param("departementId") Long departementId,
-            @Param("planningIdToExclude") Long planningIdToExclude);
+//    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Planning p JOIN p.cadreAdministratifs ca WHERE ca.departement.id = :departementId AND ((p.dateDebut BETWEEN :dateDebut AND :dateFin) OR (p.dateFin BETWEEN :dateDebut AND :dateFin) OR (:dateDebut BETWEEN p.dateDebut AND p.dateFin)) AND (p.id <> :planningIdToExclude OR :planningIdToExclude IS NULL)")
+//    boolean existsChevauchement(@Param("dateDebut") LocalDate dateDebut, @Param("dateFin") LocalDate dateFin, @Param("departementId") Long departementId, @Param("planningIdToExclude") Long planningIdToExclude);
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Planning p JOIN p.cadreAdministratifs ca WHERE ca.departement.id = :departementId AND ((p.dateDebut BETWEEN :dateDebut AND :dateFin) OR (p.dateFin BETWEEN :dateDebut AND :dateFin) OR (:dateDebut BETWEEN p.dateDebut AND p.dateFin)) AND (p.id <> :planningIdToExclude OR :planningIdToExclude IS NULL)")
+    boolean existsChevauchement(@Param("dateDebut") LocalDate dateDebut, @Param("dateFin") LocalDate dateFin, @Param("departementId") Long departementId, @Param("planningIdToExclude") Long planningIdToExclude);
 
 
     @Query("SELECT p FROM Planning p WHERE " +

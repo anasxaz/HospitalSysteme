@@ -1,12 +1,13 @@
 package com.hospital.HospitalSysteme.controller;
 
-import com.hospital.HospitalSysteme.dto.AuthenticationRequestDTO;
-import com.hospital.HospitalSysteme.dto.AuthenticationResponseDTO;
-import com.hospital.HospitalSysteme.dto.PasswordResetRequestDTO;
-import com.hospital.HospitalSysteme.dto.PasswordUpdateDTO;
+import com.hospital.HospitalSysteme.dto.*;
 import com.hospital.HospitalSysteme.service.AuthentificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,22 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthentificationService authentificationService;
+
+//
+//    @PostMapping("/register")
+//    @Operation(summary = "Inscrire un nouvel utilisateur", description = "Crée un compte utilisateur dans le système")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "201", description = "Utilisateur créé",
+//                    content = @Content(schema = @Schema(implementation = AuthenticationResponseDTO.class))),
+//            @ApiResponse(responseCode = "400", description = "Données invalides ou email déjà utilisé")
+//    })
+//    public ResponseEntity<AuthenticationResponseDTO> register(
+//            @Parameter(description = "Informations d'inscription") @Valid @RequestBody UserCreationDTO userCreationDTO) {
+//        log.info("Demande d'inscription pour l'email : {}", userCreationDTO.getEmail());
+//        AuthenticationResponseDTO response = authentificationService.register(userCreationDTO);
+//        return new ResponseEntity<>(response, HttpStatus.CREATED);
+//    }
+
 
     @PostMapping("/login")
     @Operation(summary = "Authentifier un utilisateur",

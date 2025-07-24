@@ -8,6 +8,6 @@ import java.util.List;
 public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     // à voir est ce que je vais le laisser ou pas
-    List<Admin> findByNiveauAcces(int niveauAcces);
+//    List<Admin> findByNiveauAcces(int niveauAcces);
 
 }

@@ -10,5 +10,7 @@ import lombok.NoArgsConstructor;
 public class DepartementUpdateDTO {
     private String nom;
     private String description;
+    private String localisation;
+    private Integer capacite;
     private Long chefDepartementId;
 }

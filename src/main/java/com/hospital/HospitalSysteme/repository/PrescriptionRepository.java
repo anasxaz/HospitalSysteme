@@ -16,6 +16,8 @@ public interface PrescriptionRepository extends JpaRepository<Prescription, Long
 
     List<Prescription> findByStatut(StatutPrescription statut);
 
+//    @Query("SELECT p FROM Prescription p WHERE p.consultation.dossierMedical.id = :dossierMedicalId AND p.date > :date")
+//    List<Prescription> findByDossierMedicalIdAndDateFinAfter(@Param("dossierMedicalId") Long dossierMedicalId, @Param("date") LocalDate date);
     @Query("SELECT p FROM Prescription p WHERE p.consultation.dossierMedical.id = :dossierMedicalId AND p.date > :date")
     List<Prescription> findByDossierMedicalIdAndDateFinAfter(@Param("dossierMedicalId") Long dossierMedicalId, @Param("date") LocalDate date);
 
@@ -25,9 +27,13 @@ public interface PrescriptionRepository extends JpaRepository<Prescription, Long
     @Query("SELECT p FROM Prescription p WHERE p.consultation.medecin.id = :medecinId AND p.consultation.dossierMedical.patient.id = :patientId")
     List<Prescription> findByMedecinIdAndPatientId(@Param("medecinId") Long medecinId, @Param("patientId") Long patientId);
 
+//    @Query("SELECT p FROM Prescription p WHERE p.consultation.dossierMedical.patient.id = :patientId")
+//    List<Prescription> findByPatientId(@Param("patientId") Long patientId);
     @Query("SELECT p FROM Prescription p WHERE p.consultation.dossierMedical.patient.id = :patientId")
     List<Prescription> findByPatientId(@Param("patientId") Long patientId);
 
+//    @Query("SELECT p FROM Prescription p WHERE p.date = :date")
+//    List<Prescription> findByDateDebut(@Param("date") LocalDate date);
     @Query("SELECT p FROM Prescription p WHERE p.date = :date")
     List<Prescription> findByDateDebut(@Param("date") LocalDate date);
 

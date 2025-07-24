@@ -23,4 +23,13 @@ public interface DepartementService {
 
     // Recherche
     List<DepartementDTO> searchDepartements(String query);
+
+
+    /**
+     * Assigne un chef de département
+     * @param departementId ID du département
+     * @param personnelId ID du personnel à assigner comme chef
+     * @return Le département mis à jour
+     */
+    DepartementDTO assignerChefDepartement(Long departementId, Long personnelId);
 }

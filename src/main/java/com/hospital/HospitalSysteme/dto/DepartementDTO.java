@@ -16,5 +16,6 @@ public class DepartementDTO {
     private String localisation;
     private Integer capacite;
     private LocalDateTime dateCreation;
+    private Long chefDepartementId;
 
 }

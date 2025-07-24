@@ -4,8 +4,10 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -26,6 +28,15 @@ public class MedecinCreationDTO extends UserCreationDTO{
 
     @NotNull(message = "L'ID du département est obligatoire")
     private Long departementId;
+
+    // Attributs de Personnel
+    private String poste; // Optionnel, peut être généré à partir de la spécialité
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate dateEmbauche; // Optionnel, peut être la date actuelle par défaut
+
+    @DecimalMin(value = "0.0", inclusive = true, message = "Le salaire doit être positif ou nul")
+    private BigDecimal salaire; // Optionnel, peut être 0 par défaut
 
 
 }

@@ -36,6 +36,15 @@ public class Medicament {
     @Column(nullable = false)
     private String contreIndications;
 
+    @Column(nullable = false)
+    private Boolean ordonnanceRequise = false;
+
+    @Column(length = 50)
+    private String categorie;
+
+    @Column(length = 100)
+    private String fabricant;
+
     // Relation avec Prescription
     @ManyToMany
     @JoinTable(
