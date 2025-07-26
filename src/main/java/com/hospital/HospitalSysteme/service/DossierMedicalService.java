@@ -5,6 +5,7 @@ import com.hospital.HospitalSysteme.dto.DossierMedicalCreationDTO;
 import com.hospital.HospitalSysteme.dto.DossierMedicalDTO;
 import com.hospital.HospitalSysteme.dto.DossierMedicalDetailDTO;
 import com.hospital.HospitalSysteme.dto.PrescriptionDTO;
+import com.hospital.HospitalSysteme.entity.enums.GroupeSanguin;
 
 import java.util.List;
 
@@ -25,6 +26,6 @@ public interface DossierMedicalService {
     // Statistiques et recherche
     int countDossiersMedicaux();
     List<DossierMedicalDTO> searchDossiersMedicauxByPatientNom(String nom);
-    List<DossierMedicalDTO> getDossiersMedicauxByGroupeSanguin(String groupeSanguin);
+    List<DossierMedicalDTO> getDossiersMedicauxByGroupeSanguin(GroupeSanguin groupeSanguin);
     List<DossierMedicalDTO> getDossiersMedicauxWithAllergies(String allergies);
 }

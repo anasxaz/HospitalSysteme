@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ConsultationCreationDTO {
 
-    @NotNull(message = "La date est obligatoire")
-    private LocalDateTime date;
+//    @NotNull(message = "La date est obligatoire")
+//    private LocalDateTime date;
 
     private String symptomes;
     private String diagnostic;

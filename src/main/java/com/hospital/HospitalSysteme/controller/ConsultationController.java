@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -183,11 +184,16 @@ public class ConsultationController {
             @ApiResponse(responseCode = "204", description = "Note ajoutée avec succès"),
             @ApiResponse(responseCode = "404", description = "Consultation non trouvée")
     })
-    @PreAuthorize("hasRole('MEDECIN')")
+    @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<Void> ajouterNoteConsultation(
-            @Parameter(description = "ID de la consultation") @PathVariable Long id,
-            @Parameter(description = "Note à ajouter") @RequestBody String note) {
+            @PathVariable Long id,
+            @RequestParam("note") String note) { // ✅ Plus simple !
+
         log.info("Demande d'ajout de note à la consultation ID: {}", id);
+
+        if (note == null || note.trim().isEmpty()) {
+            throw new IllegalArgumentException("La note ne peut pas être vide");
+        }
 
         consultationService.ajouterNoteConsultation(id, note);
         return ResponseEntity.noContent().build();
@@ -200,15 +206,21 @@ public class ConsultationController {
             @ApiResponse(responseCode = "204", description = "Diagnostic ajouté avec succès"),
             @ApiResponse(responseCode = "404", description = "Consultation non trouvée")
     })
-    @PreAuthorize("hasRole('MEDECIN')")
+    @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<Void> ajouterDiagnostic(
-            @Parameter(description = "ID de la consultation") @PathVariable Long id,
-            @Parameter(description = "Diagnostic à ajouter") @RequestBody String diagnostic) {
+            @PathVariable Long id,
+            @RequestParam("diagnostic") String diagnostic) { // ✅ Plus simple !
+
         log.info("Demande d'ajout de diagnostic à la consultation ID: {}", id);
+
+        if (diagnostic == null || diagnostic.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le diagnostic ne peut pas être vide");
+        }
 
         consultationService.ajouterDiagnostic(id, diagnostic);
         return ResponseEntity.noContent().build();
     }
+
 
     @GetMapping("/{id}/prescriptions")
     @Operation(summary = "Récupérer les prescriptions d'une consultation",

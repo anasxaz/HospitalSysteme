@@ -1,6 +1,7 @@
 package com.hospital.HospitalSysteme.controller;
 
 import com.hospital.HospitalSysteme.dto.*;
+import com.hospital.HospitalSysteme.entity.enums.GroupeSanguin;
 import com.hospital.HospitalSysteme.service.DossierMedicalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -193,19 +195,45 @@ public class DossierMedicalController {
         return ResponseEntity.ok(dossiersMedicaux);
     }
 
+//    @GetMapping("/groupe-sanguin/{groupeSanguin}")
+//    @Operation(summary = "Récupérer les dossiers médicaux par groupe sanguin",
+//            description = "Récupère tous les dossiers médicaux ayant un groupe sanguin spécifique")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Liste des dossiers médicaux récupérée")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'INFIRMIER')")
+//    public ResponseEntity<List<DossierMedicalDTO>> getDossiersMedicauxByGroupeSanguin(
+//            @Parameter(description = "Groupe sanguin (A_PLUS, A_MOINS, B_PLUS, B_MOINS, AB_PLUS, AB_MOINS, O_PLUS, O_MOINS)") @PathVariable String groupeSanguin) {
+//        log.info("Demande de récupération des dossiers médicaux avec le groupe sanguin: {}", groupeSanguin);
+//
+//        List<DossierMedicalDTO> dossiersMedicaux = dossierMedicalService.getDossiersMedicauxByGroupeSanguin(GroupeSanguin.valueOf(groupeSanguin));
+//        return ResponseEntity.ok(dossiersMedicaux);
+//    }
+
     @GetMapping("/groupe-sanguin/{groupeSanguin}")
     @Operation(summary = "Récupérer les dossiers médicaux par groupe sanguin",
             description = "Récupère tous les dossiers médicaux ayant un groupe sanguin spécifique")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Liste des dossiers médicaux récupérée")
+            @ApiResponse(responseCode = "200", description = "Liste des dossiers médicaux récupérée"),
+            @ApiResponse(responseCode = "400", description = "Groupe sanguin invalide")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'INFIRMIER')")
     public ResponseEntity<List<DossierMedicalDTO>> getDossiersMedicauxByGroupeSanguin(
-            @Parameter(description = "Groupe sanguin (A+, A-, B+, B-, AB+, AB-, O+, O-)") @PathVariable String groupeSanguin) {
+            @Parameter(description = "Groupe sanguin",
+                    schema = @Schema(allowableValues = {"A_PLUS", "A_MOINS", "B_PLUS", "B_MOINS", "AB_PLUS", "AB_MOINS", "O_PLUS", "O_MOINS"}))
+            @PathVariable String groupeSanguin) {
         log.info("Demande de récupération des dossiers médicaux avec le groupe sanguin: {}", groupeSanguin);
 
-        List<DossierMedicalDTO> dossiersMedicaux = dossierMedicalService.getDossiersMedicauxByGroupeSanguin(groupeSanguin);
-        return ResponseEntity.ok(dossiersMedicaux);
+        try {
+            // Convertir le String en enum
+            GroupeSanguin groupeSanguinEnum = GroupeSanguin.valueOf(groupeSanguin.toUpperCase());
+
+            List<DossierMedicalDTO> dossiersMedicaux = dossierMedicalService.getDossiersMedicauxByGroupeSanguin(groupeSanguinEnum);
+            return ResponseEntity.ok(dossiersMedicaux);
+        } catch (IllegalArgumentException e) {
+            log.error("Groupe sanguin invalide: {}", groupeSanguin);
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("/allergies")

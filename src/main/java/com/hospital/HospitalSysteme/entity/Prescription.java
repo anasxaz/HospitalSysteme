@@ -27,6 +27,13 @@ public class Prescription {
     @Column(nullable = false)
     private LocalDate date;
 
+    // ✅ Ajouter ces champs manquants
+    @Column(nullable = false)
+    private LocalDate dateFin;
+
+    @Column(nullable = false)
+    private String posologie;
+
     @Column(nullable = false)
     private String instructions;
 

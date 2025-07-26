@@ -39,7 +39,7 @@ public class DossierMedical {
     private GroupeSanguin groupeSanguin;
 
     // Relation avec Consultation
-    @OneToMany(mappedBy = "dossierMedical", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "dossierMedical", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Consultation> consultations = new ArrayList<>();
 
     // Relation avec Patient

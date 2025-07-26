@@ -22,6 +22,7 @@ public class ConsultationDTO {
     private String medecinNom;
     private String medecinPrenom;
     private Long dossierMedicalId;
-    private Long rendezVousId;
+    private Long rendezVousId;  // ✅ Sera maintenant mappé correctement
+
 
 }

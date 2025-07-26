@@ -29,6 +29,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     private RendezVousRepository rendezVousRepository;
     private ConsultationRepository consultationRepository;
     private PrescriptionRepository prescriptionRepository;
+    private MedicamentRepository medicamentRepository;
 
     private MedecinMapper medecinMapper;
     private RendezVousMapper rendezVousMapper;
@@ -38,19 +39,41 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
 
 
+//    @Override
+//    public PrescriptionDTO createPrescription(PrescriptionCreationDTO prescriptionCreationDTO) {
+//        log.info("Création d'une nouvelle prescription le : {}", prescriptionCreationDTO.getDateDebut());
+//
+//        // Convert prescriptionCreationDTO to prescription JPA Entity
+//        Prescription prescription = prescriptionMapper.toEntity(prescriptionCreationDTO);
+//
+//        // prescription JPA Entity
+//        Prescription savedPrescription = prescriptionRepository.save(prescription);
+//
+//        log.info("Prescription créée avec succès avec l'ID : {}", savedPrescription.getId());
+//
+//        // Convert savedPrescription JPA Entity into DTO object
+//        return prescriptionMapper.toDTO(savedPrescription);
+//    }
+
+
     @Override
     public PrescriptionDTO createPrescription(PrescriptionCreationDTO prescriptionCreationDTO) {
         log.info("Création d'une nouvelle prescription le : {}", prescriptionCreationDTO.getDateDebut());
 
-        // Convert prescriptionCreationDTO to prescription JPA Entity
+        // Mapper la prescription
         Prescription prescription = prescriptionMapper.toEntity(prescriptionCreationDTO);
 
-        // prescription JPA Entity
+        // Gérer la relation avec le médicament
+        if (prescriptionCreationDTO.getMedicamentId() != null) {
+            Medicament medicament = medicamentRepository.findById(prescriptionCreationDTO.getMedicamentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Médicament non trouvé avec l'ID : " + prescriptionCreationDTO.getMedicamentId()));
+
+            prescription.getMedicaments().add(medicament);
+            medicament.getPrescriptions().add(prescription);
+        }
+
         Prescription savedPrescription = prescriptionRepository.save(prescription);
 
-        log.info("Prescription créée avec succès avec l'ID : {}", savedPrescription.getId());
-
-        // Convert savedPrescription JPA Entity into DTO object
         return prescriptionMapper.toDTO(savedPrescription);
     }
 

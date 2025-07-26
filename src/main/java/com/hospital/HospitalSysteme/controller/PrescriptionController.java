@@ -44,7 +44,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "400", description = "Données invalides"),
             @ApiResponse(responseCode = "404", description = "Consultation ou médicament non trouvé")
     })
-    @PreAuthorize("hasRole('MEDECIN')")
+    @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<PrescriptionDTO> createPrescription(
             @Parameter(description = "Informations de la prescription à créer") @Valid @RequestBody PrescriptionCreationDTO prescriptionCreationDTO) {
         log.info("Demande de création d'une prescription pour la consultation ID: {} avec le médicament ID: {}",
@@ -60,7 +60,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "200", description = "Prescription trouvée"),
             @ApiResponse(responseCode = "404", description = "Prescription non trouvée")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'INFIRMIER', 'PHARMACIEN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'INFIRMIER', 'PHARMACIEN', 'PERSONNEL')")
     public ResponseEntity<PrescriptionDTO> getPrescriptionById(
             @Parameter(description = "ID de la prescription") @PathVariable Long id) {
         log.info("Demande de récupération de la prescription avec l'ID: {}", id);
@@ -74,7 +74,7 @@ public class PrescriptionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Liste des prescriptions récupérée")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PHARMACIEN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PHARMACIEN', 'PERSONNEL')")
     public ResponseEntity<List<PrescriptionDTO>> getAllPrescriptions() {
         log.info("Demande de récupération de toutes les prescriptions");
 
@@ -88,7 +88,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "200", description = "Prescription mise à jour"),
             @ApiResponse(responseCode = "404", description = "Prescription non trouvée")
     })
-    @PreAuthorize("hasRole('MEDECIN')")
+    @PreAuthorize("hasRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<PrescriptionDTO> updatePrescription(
             @Parameter(description = "ID de la prescription") @PathVariable Long id,
             @Parameter(description = "Informations à mettre à jour") @Valid @RequestBody PrescriptionUpdateDTO prescriptionUpdateDTO) {
@@ -104,7 +104,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "204", description = "Prescription supprimée"),
             @ApiResponse(responseCode = "404", description = "Prescription non trouvée")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PERSONNEL')")
     public ResponseEntity<Void> deletePrescription(
             @Parameter(description = "ID de la prescription") @PathVariable Long id) {
         log.info("Demande de suppression de la prescription avec l'ID: {}", id);
@@ -120,7 +120,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "200", description = "Liste des prescriptions du patient récupérée"),
             @ApiResponse(responseCode = "404", description = "Patient non trouvé")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'INFIRMIER', 'PHARMACIEN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'INFIRMIER', 'PHARMACIEN', 'PERSONNEL')")
     public ResponseEntity<List<PrescriptionDTO>> getPrescriptionsByPatient(
             @Parameter(description = "ID du patient") @PathVariable Long patientId) {
         log.info("Demande de récupération des prescriptions pour le patient ID: {}", patientId);
@@ -136,7 +136,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "200", description = "Liste des prescriptions du médecin récupérée"),
             @ApiResponse(responseCode = "404", description = "Médecin non trouvé")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PERSONNEL')")
     public ResponseEntity<List<PrescriptionDTO>> getPrescriptionsByMedecin(
             @Parameter(description = "ID du médecin") @PathVariable Long medecinId) {
         log.info("Demande de récupération des prescriptions pour le médecin ID: {}", medecinId);
@@ -152,7 +152,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "200", description = "Liste des prescriptions de la consultation récupérée"),
             @ApiResponse(responseCode = "404", description = "Consultation non trouvée")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'INFIRMIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'INFIRMIER', 'PERSONNEL')")
     public ResponseEntity<List<PrescriptionDTO>> getPrescriptionsByConsultation(
             @Parameter(description = "ID de la consultation") @PathVariable Long consultationId) {
         log.info("Demande de récupération des prescriptions pour la consultation ID: {}", consultationId);
@@ -167,7 +167,7 @@ public class PrescriptionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Liste des prescriptions de la date récupérée")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PHARMACIEN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PHARMACIEN', 'PERSONNEL')")
     public ResponseEntity<List<PrescriptionDTO>> getPrescriptionsByDate(
             @Parameter(description = "Date des prescriptions (format: yyyy-MM-dd)")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -184,7 +184,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "204", description = "Médicament ajouté avec succès"),
             @ApiResponse(responseCode = "404", description = "Prescription non trouvée")
     })
-    @PreAuthorize("hasRole('MEDECIN')")
+    @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<Void> ajouterMedicamentAPrescription(
             @Parameter(description = "ID de la prescription") @PathVariable Long id,
             @Parameter(description = "Médicament à ajouter") @Valid @RequestBody MedicamentDTO medicamentDTO) {
@@ -201,7 +201,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "204", description = "Médicament supprimé avec succès"),
             @ApiResponse(responseCode = "404", description = "Prescription ou médicament non trouvé")
     })
-    @PreAuthorize("hasRole('MEDECIN')")
+    @PreAuthorize("hasRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<Void> supprimerMedicamentDePrescription(
             @Parameter(description = "ID de la prescription") @PathVariable Long prescriptionId,
             @Parameter(description = "ID du médicament") @PathVariable Long medicamentId) {
@@ -220,7 +220,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "400", description = "Durée invalide"),
             @ApiResponse(responseCode = "404", description = "Prescription non trouvée")
     })
-    @PreAuthorize("hasRole('MEDECIN')")
+    @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<PrescriptionDTO> renouvelerPrescription(
             @Parameter(description = "ID de la prescription") @PathVariable Long id,
             @Parameter(description = "Durée en jours du renouvellement") @RequestParam int dureeJours) {
@@ -237,7 +237,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "200", description = "Nombre de prescriptions récupéré"),
             @ApiResponse(responseCode = "404", description = "Médecin non trouvé")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PERSONNEL')")
     public ResponseEntity<Integer> countPrescriptionsByMedecin(
             @Parameter(description = "ID du médecin") @PathVariable Long medecinId) {
         log.info("Demande de comptage des prescriptions pour le médecin ID: {}", medecinId);
@@ -253,7 +253,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "200", description = "Nombre de prescriptions récupéré"),
             @ApiResponse(responseCode = "404", description = "Patient non trouvé")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PERSONNEL')")
     public ResponseEntity<Integer> countPrescriptionsByPatient(
             @Parameter(description = "ID du patient") @PathVariable Long patientId) {
         log.info("Demande de comptage des prescriptions pour le patient ID: {}", patientId);
@@ -269,7 +269,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "200", description = "Liste des médicaments les plus prescrits récupérée"),
             @ApiResponse(responseCode = "400", description = "Limite invalide")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PHARMACIEN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDECIN', 'PHARMACIEN', 'PERSONNEL')")
     public ResponseEntity<List<MedicamentStatDTO>> getMedicamentsLesPlusPrescrits(
             @Parameter(description = "Nombre de médicaments à récupérer") @RequestParam(defaultValue = "10") int limit) {
         log.info("Demande de récupération des {} médicaments les plus prescrits", limit);
