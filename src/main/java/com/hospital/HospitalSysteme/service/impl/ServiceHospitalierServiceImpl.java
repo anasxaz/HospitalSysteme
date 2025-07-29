@@ -1,5 +1,5 @@
 package com.hospital.HospitalSysteme.service.impl;
-
+import java.util.Objects;
 import com.hospital.HospitalSysteme.dto.ServiceCreationDTO;
 import com.hospital.HospitalSysteme.dto.ServiceDTO;
 import com.hospital.HospitalSysteme.dto.ServiceUpdateDTO;
@@ -28,6 +28,27 @@ public class ServiceHospitalierServiceImpl implements ServiceHospitalierService 
     private final ServiceRepository serviceRepository;
     private final ServiceMapper serviceMapper;
 
+//    @Override
+//    @Transactional
+//    public ServiceDTO createService(ServiceCreationDTO serviceCreationDTO) {
+//        log.info("Création d'un nouveau service hospitalier : {}", serviceCreationDTO.getNom());
+//
+//        // Conversion du DTO en entité
+//        ServiceHospitalier service = serviceMapper.toEntity(serviceCreationDTO);
+//
+//        // Si actif n'est pas spécifié, on le met à true par défaut
+//        if (service.getActif() == null) {
+//            service.setActif(true);
+//        }
+//
+//        // Sauvegarde du service
+//        ServiceHospitalier savedService = serviceRepository.save(service);
+//
+//        log.info("Service hospitalier créé avec succès avec l'ID : {}", savedService.getId());
+//
+//        // Conversion de l'entité en DTO pour le retour
+//        return serviceMapper.toDTO(savedService);
+//    }
     @Override
     @Transactional
     public ServiceDTO createService(ServiceCreationDTO serviceCreationDTO) {
@@ -39,6 +60,12 @@ public class ServiceHospitalierServiceImpl implements ServiceHospitalierService 
         // Si actif n'est pas spécifié, on le met à true par défaut
         if (service.getActif() == null) {
             service.setActif(true);
+        }
+
+        // Gestion automatique du coût si non fourni
+        if (service.getCout() == null) {
+            // Le coût est calculé automatiquement comme 70% du tarif
+            service.setCout(service.getTarif().multiply(new BigDecimal("0.7")));
         }
 
         // Sauvegarde du service
@@ -60,17 +87,49 @@ public class ServiceHospitalierServiceImpl implements ServiceHospitalierService 
         return serviceMapper.toDTO(service);
     }
 
+//    @Override
+//    @Transactional
+//    public ServiceDTO updateService(Long serviceId, ServiceUpdateDTO serviceUpdateDTO) {
+//        log.info("Mise à jour du service hospitalier avec l'ID : {}", serviceId);
+//
+//        // Vérification de l'existence du service
+//        ServiceHospitalier service = serviceRepository.findById(serviceId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Service hospitalier non trouvé avec l'ID : " + serviceId));
+//
+//        // Mise à jour des propriétés du service
+//        serviceMapper.updateServiceFromDTO(serviceUpdateDTO, service);
+//
+//        // Sauvegarde des modifications
+//        ServiceHospitalier updatedService = serviceRepository.save(service);
+//
+//        log.info("Service hospitalier mis à jour avec succès");
+//
+//        return serviceMapper.toDTO(updatedService);
+//    }
+
     @Override
     @Transactional
     public ServiceDTO updateService(Long serviceId, ServiceUpdateDTO serviceUpdateDTO) {
         log.info("Mise à jour du service hospitalier avec l'ID : {}", serviceId);
+        log.info("DTO reçu : {}", serviceUpdateDTO);
 
         // Vérification de l'existence du service
         ServiceHospitalier service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service hospitalier non trouvé avec l'ID : " + serviceId));
 
-        // Mise à jour des propriétés du service
+        // Mise à jour des propriétés du service via le mapper
         serviceMapper.updateServiceFromDTO(serviceUpdateDTO, service);
+
+        // Si un coût est fourni, l'utiliser. Sinon, calculer automatiquement à partir du tarif
+        if (serviceUpdateDTO.getCout() != null) {
+            service.setCout(serviceUpdateDTO.getCout());
+            log.info("Coût explicite utilisé : {}", serviceUpdateDTO.getCout());
+        } else {
+            // Recalculer le coût basé sur le tarif actuel
+            BigDecimal nouveauCout = service.getTarif().multiply(new BigDecimal("0.7"));
+            service.setCout(nouveauCout);
+            log.info("Coût calculé automatiquement : {} ({}% de {})", nouveauCout, "70", service.getTarif());
+        }
 
         // Sauvegarde des modifications
         ServiceHospitalier updatedService = serviceRepository.save(service);
@@ -255,5 +314,17 @@ public class ServiceHospitalierServiceImpl implements ServiceHospitalierService 
                 .collect(Collectors.toList());
 
         return serviceMapper.toDTOList(services);
+    }
+
+    @Override
+    public List<String> getAllCategories() {
+        log.info("Récupération de toutes les catégories existantes dans la base de données");
+
+        // Récupère uniquement les catégories qui existent réellement dans la table services
+        List<String> categories = serviceRepository.findDistinctCategories();
+
+        log.info("Catégories trouvées : {}", categories);
+
+        return categories;
     }
 }

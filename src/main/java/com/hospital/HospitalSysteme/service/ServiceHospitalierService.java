@@ -33,4 +33,6 @@ public interface ServiceHospitalierService {
     Map<String, Integer> countServicesByAllCategories();
     BigDecimal calculateTotalTarifsByCategorie(String categorie);
     List<ServiceDTO> getTopServicesByTarif(int limit);
+
+    List<String> getAllCategories();
 }

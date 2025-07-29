@@ -41,4 +41,14 @@ public interface DepartementRepository extends JpaRepository<Departement, Long> 
 //    @Query("SELECT d.id, d.nom, COUNT(p) FROM Departement d LEFT JOIN d.personnels p WHERE TYPE(p) = 'INFIRMIER' GROUP BY d.id, d.nom")
     List<Object[]> countInfirmiersByDepartement();
 
+
+    @Query("SELECT d.id, d.nom FROM Departement d")
+    List<Object[]> findAllDepartements();
+
+    @Query("SELECT COUNT(i) FROM Infirmier i WHERE i.departement.id = :departementId")
+    Long countInfirmiersByDepartementId(@Param("departementId") Long departementId);
+
+    @Query("SELECT COUNT(m) FROM Medecin m WHERE m.departement.id = :departementId")
+    Long countMedecinsByDepartementId(@Param("departementId") Long departementId);
+
 }

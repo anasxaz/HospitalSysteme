@@ -23,8 +23,9 @@ public class CadreAdministratif extends Personnel{
     @Column(length = 100, nullable = false)
     private String fonction;
 
-    @Column(nullable = false)
-    private int niveauResponsabilite;
+    // CHANGEZ EN STRING
+    @Column(length = 50, nullable = false)
+    private String niveauResponsabilite;
 
     // Relation avec Facture
     @OneToMany(mappedBy = "cadreAdministratif", cascade = CascadeType.ALL)

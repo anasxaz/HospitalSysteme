@@ -127,20 +127,20 @@ public class ServiceHospitalierController {
 
     // ====================== GESTION DES FILTRES ET RECHERCHES ======================
 
-    @GetMapping("/categorie/{categorie}")
-    @Operation(summary = "Récupérer les services par catégorie",
-            description = "Récupère tous les services hospitaliers d'une catégorie spécifique")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Services de la catégorie récupérés avec succès")
-    })
-    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN', 'INFIRMIER')")
-    public ResponseEntity<List<ServiceDTO>> getServicesByCategorie(
-            @Parameter(description = "Catégorie des services recherchés") @PathVariable String categorie) {
-        log.info("Demande de récupération des services de la catégorie: {}", categorie);
-
-        List<ServiceDTO> services = serviceHospitalierService.getServicesByCategorie(categorie);
-        return ResponseEntity.ok(services);
-    }
+//    @GetMapping("/categorie/{categorie}")
+//    @Operation(summary = "Récupérer les services par catégorie",
+//            description = "Récupère tous les services hospitaliers d'une catégorie spécifique")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Services de la catégorie récupérés avec succès")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN', 'INFIRMIER')")
+//    public ResponseEntity<List<ServiceDTO>> getServicesByCategorie(
+//            @Parameter(description = "Catégorie des services recherchés") @PathVariable String categorie) {
+//        log.info("Demande de récupération des services de la catégorie: {}", categorie);
+//
+//        List<ServiceDTO> services = serviceHospitalierService.getServicesByCategorie(categorie);
+//        return ResponseEntity.ok(services);
+//    }
 
     @GetMapping("/actifs")
     @Operation(summary = "Récupérer les services hospitaliers actifs",
@@ -262,46 +262,192 @@ public class ServiceHospitalierController {
 
     // ====================== STATISTIQUES ET ANALYSES ======================
 
-    @GetMapping("/stats/count-by-categorie/{categorie}")
+//    @GetMapping("/stats/count-by-categorie/{categorie}")
+//    @Operation(summary = "Compter les services par catégorie",
+//            description = "Compte le nombre de services hospitaliers dans une catégorie spécifique")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Nombre de services récupéré avec succès")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
+//    public ResponseEntity<Integer> countServicesByCategorie(
+//            @Parameter(description = "Catégorie à analyser") @PathVariable String categorie) {
+//        log.info("Demande de comptage des services pour la catégorie: {}", categorie);
+//
+//        int count = serviceHospitalierService.countServicesByCategorie(categorie);
+//        return ResponseEntity.ok(count);
+//    }
+//
+//    @GetMapping("/stats/count-by-all-categories")
+//    @Operation(summary = "Compter les services par toutes les catégories",
+//            description = "Retourne un résumé du nombre de services par catégorie")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Statistiques par catégorie récupérées avec succès")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
+//    public ResponseEntity<Map<String, Integer>> countServicesByAllCategories() {
+//        log.info("Demande de statistiques des services par toutes les catégories");
+//
+//        Map<String, Integer> stats = serviceHospitalierService.countServicesByAllCategories();
+//        return ResponseEntity.ok(stats);
+//    }
+//
+//    @GetMapping("/stats/total-tarifs-by-categorie/{categorie}")
+//    @Operation(summary = "Calculer le total des tarifs par catégorie",
+//            description = "Calcule la somme totale des tarifs pour une catégorie de services")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Total des tarifs calculé avec succès")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
+//    public ResponseEntity<BigDecimal> calculateTotalTarifsByCategorie(
+//            @Parameter(description = "Catégorie pour le calcul") @PathVariable String categorie) {
+//        log.info("Demande de calcul du total des tarifs pour la catégorie: {}", categorie);
+//
+//        BigDecimal total = serviceHospitalierService.calculateTotalTarifsByCategorie(categorie);
+//        return ResponseEntity.ok(total);
+//    }
+
+    // Ajoute ces méthodes à ton ServiceHospitalierController
+
+    // ====================== GESTION DES CATÉGORIES RÉELLES ======================
+//    @GetMapping("/categories")
+//    @Operation(summary = "Récupérer les catégories existantes",
+//            description = "Récupère la liste des catégories qui existent réellement dans la base de données")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Liste des catégories existantes récupérée avec succès")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN', 'INFIRMIER')")
+//    public ResponseEntity<List<String>> getExistingCategories() {
+//        log.info("Demande de récupération des catégories existantes en base");
+//        List<String> categories = serviceHospitalierService.getAllCategories();
+//        return ResponseEntity.ok(categories);
+//    }
+//
+//// Garder l'endpoint avec PathVariable pour la compatibilité (pour les appels directs)
+//// Mais ajouter aussi la version avec RequestParam pour Swagger UI dropdown
+//
+//    @GetMapping("/categorie")
+//    @Operation(summary = "Récupérer les services par catégorie",
+//            description = "Récupère tous les services hospitaliers d'une catégorie spécifique. Appelez d'abord GET /categories pour voir les options disponibles")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Services de la catégorie récupérés avec succès"),
+//            @ApiResponse(responseCode = "400", description = "Catégorie invalide")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN', 'INFIRMIER')")
+//    public ResponseEntity<List<ServiceDTO>> getServicesByCategorieParam(
+//            @Parameter(description = "Catégorie des services (utilisez GET /categories pour voir les options disponibles)",
+//                    required = true,
+//                    example = "Chirurgie")
+//            @RequestParam String categorie) {
+//        log.info("Demande de récupération des services de la catégorie: {}", categorie);
+//        List<ServiceDTO> services = serviceHospitalierService.getServicesByCategorie(categorie);
+//        return ResponseEntity.ok(services);
+//    }
+//
+//    @GetMapping("/stats/count-by-categorie")
+//    @Operation(summary = "Compter les services par catégorie",
+//            description = "Compte le nombre de services hospitaliers dans une catégorie spécifique. Appelez d'abord GET /categories pour voir les options disponibles")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Nombre de services récupéré avec succès"),
+//            @ApiResponse(responseCode = "400", description = "Catégorie invalide")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
+//    public ResponseEntity<Integer> countServicesByCategorieParam(
+//            @Parameter(description = "Catégorie à analyser (utilisez GET /categories pour voir les options disponibles)",
+//                    required = true,
+//                    example = "Radiologie")
+//            @RequestParam String categorie) {
+//        log.info("Demande de comptage des services pour la catégorie: {}", categorie);
+//        int count = serviceHospitalierService.countServicesByCategorie(categorie);
+//        return ResponseEntity.ok(count);
+//    }
+//
+//    @GetMapping("/stats/total-tarifs-by-categorie")
+//    @Operation(summary = "Calculer le total des tarifs par catégorie",
+//            description = "Calcule la somme totale des tarifs pour une catégorie de services. Appelez d'abord GET /categories pour voir les options disponibles")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Total des tarifs calculé avec succès"),
+//            @ApiResponse(responseCode = "400", description = "Catégorie invalide")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
+//    public ResponseEntity<BigDecimal> calculateTotalTarifsByCategorieParam(
+//            @Parameter(description = "Catégorie pour le calcul (utilisez GET /categories pour voir les options disponibles)",
+//                    required = true,
+//                    example = "Diagnostic")
+//            @RequestParam String categorie) {
+//        log.info("Demande de calcul du total des tarifs pour la catégorie: {}", categorie);
+//        BigDecimal total = serviceHospitalierService.calculateTotalTarifsByCategorie(categorie);
+//        return ResponseEntity.ok(total);
+//    }
+
+// Ajoute ces méthodes à ton ServiceHospitalierController
+
+// ====================== GESTION DES CATÉGORIES AVEC DROPDOWN ======================
+@GetMapping("/categories")
+@Operation(summary = "Récupérer les catégories existantes",
+        description = "Récupère la liste des catégories qui existent réellement dans la base de données")
+@ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Liste des catégories existantes récupérée avec succès")
+})
+@PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN', 'INFIRMIER')")
+public ResponseEntity<List<String>> getExistingCategories() {
+    log.info("Demande de récupération des catégories existantes en base");
+    List<String> categories = serviceHospitalierService.getAllCategories();
+    return ResponseEntity.ok(categories);
+}
+
+    @GetMapping("/categorie")
+    @Operation(summary = "Récupérer les services par catégorie",
+            description = "Récupère tous les services hospitaliers d'une catégorie spécifique")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Services de la catégorie récupérés avec succès"),
+            @ApiResponse(responseCode = "400", description = "Catégorie invalide")
+    })
+    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN', 'INFIRMIER')")
+    public ResponseEntity<List<ServiceDTO>> getServicesByCategorieParam(
+            @Parameter(description = "Sélectionnez une catégorie",
+                    required = true,
+                    schema = @Schema(type = "string",
+                            allowableValues = {"Chirurgie", "Radiologie", "Diagnostic", "Urgence", "Cardiologie", "Pédiatrie", "Gynécologie", "Neurologie", "Orthopédie", "Dermatologie", "Psychiatrie", "Ophtalmologie", "ORL", "Laboratoire", "Pharmacie", "Imagerie", "Consultation", "Hospitalisation", "Ambulatoire", "Réanimation"}))
+            @RequestParam String categorie) {
+        log.info("Demande de récupération des services de la catégorie: {}", categorie);
+        List<ServiceDTO> services = serviceHospitalierService.getServicesByCategorie(categorie);
+        return ResponseEntity.ok(services);
+    }
+
+    @GetMapping("/stats/count-by-categorie")
     @Operation(summary = "Compter les services par catégorie",
             description = "Compte le nombre de services hospitaliers dans une catégorie spécifique")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Nombre de services récupéré avec succès")
+            @ApiResponse(responseCode = "200", description = "Nombre de services récupéré avec succès"),
+            @ApiResponse(responseCode = "400", description = "Catégorie invalide")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
-    public ResponseEntity<Integer> countServicesByCategorie(
-            @Parameter(description = "Catégorie à analyser") @PathVariable String categorie) {
+    public ResponseEntity<Integer> countServicesByCategorieParam(
+            @Parameter(description = "Sélectionnez une catégorie",
+                    required = true,
+                    schema = @Schema(type = "string",
+                            allowableValues = {"Chirurgie", "Radiologie", "Diagnostic", "Urgence", "Cardiologie", "Pédiatrie", "Gynécologie", "Neurologie", "Orthopédie", "Dermatologie", "Psychiatrie", "Ophtalmologie", "ORL", "Laboratoire", "Pharmacie", "Imagerie", "Consultation", "Hospitalisation", "Ambulatoire", "Réanimation"}))
+            @RequestParam String categorie) {
         log.info("Demande de comptage des services pour la catégorie: {}", categorie);
-
         int count = serviceHospitalierService.countServicesByCategorie(categorie);
         return ResponseEntity.ok(count);
     }
 
-    @GetMapping("/stats/count-by-all-categories")
-    @Operation(summary = "Compter les services par toutes les catégories",
-            description = "Retourne un résumé du nombre de services par catégorie")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Statistiques par catégorie récupérées avec succès")
-    })
-    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
-    public ResponseEntity<Map<String, Integer>> countServicesByAllCategories() {
-        log.info("Demande de statistiques des services par toutes les catégories");
-
-        Map<String, Integer> stats = serviceHospitalierService.countServicesByAllCategories();
-        return ResponseEntity.ok(stats);
-    }
-
-    @GetMapping("/stats/total-tarifs-by-categorie/{categorie}")
+    @GetMapping("/stats/total-tarifs-by-categorie")
     @Operation(summary = "Calculer le total des tarifs par catégorie",
             description = "Calcule la somme totale des tarifs pour une catégorie de services")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Total des tarifs calculé avec succès")
+            @ApiResponse(responseCode = "200", description = "Total des tarifs calculé avec succès"),
+            @ApiResponse(responseCode = "400", description = "Catégorie invalide")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
-    public ResponseEntity<BigDecimal> calculateTotalTarifsByCategorie(
-            @Parameter(description = "Catégorie pour le calcul") @PathVariable String categorie) {
+    public ResponseEntity<BigDecimal> calculateTotalTarifsByCategorieParam(
+            @Parameter(description = "Sélectionnez une catégorie",
+                    required = true,
+                    schema = @Schema(type = "string",
+                            allowableValues = {"Chirurgie", "Radiologie", "Diagnostic", "Urgence", "Cardiologie", "Pédiatrie", "Gynécologie", "Neurologie", "Orthopédie", "Dermatologie", "Psychiatrie", "Ophtalmologie", "ORL", "Laboratoire", "Pharmacie", "Imagerie", "Consultation", "Hospitalisation", "Ambulatoire", "Réanimation"}))
+            @RequestParam String categorie) {
         log.info("Demande de calcul du total des tarifs pour la catégorie: {}", categorie);
-
         BigDecimal total = serviceHospitalierService.calculateTotalTarifsByCategorie(categorie);
         return ResponseEntity.ok(total);
     }

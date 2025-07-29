@@ -3,7 +3,9 @@ package com.hospital.HospitalSysteme.service.impl;
 import com.hospital.HospitalSysteme.dto.FactureCreationDTO;
 import com.hospital.HospitalSysteme.dto.FactureDTO;
 import com.hospital.HospitalSysteme.dto.FactureDetailDTO;
+import com.hospital.HospitalSysteme.entity.CadreAdministratif;
 import com.hospital.HospitalSysteme.entity.Facture;
+import com.hospital.HospitalSysteme.entity.Patient;
 import com.hospital.HospitalSysteme.entity.PlanDeSoins;
 import com.hospital.HospitalSysteme.entity.enums.StatutPaiement;
 import com.hospital.HospitalSysteme.exception.ResourceNotFoundException;
@@ -42,29 +44,65 @@ public class FacturationServiceImpl implements FacturationService {
 
 
 
+//    @Override
+//    public FactureDTO createFacture(FactureCreationDTO factureCreationDTO) {
+//        log.info("Création d'une nouvelle facture le : {}", factureCreationDTO.getDate());
+//
+//        // Convert factureCreationDTO to facture JPA Entity
+//        Facture facture = factureMapper.toEntity(factureCreationDTO);
+//
+//        // Générer un numéro de facture unique
+//        facture.setNumero("FACT-" + System.currentTimeMillis());
+//
+//        // Définir le statut par défaut si non spécifié
+//        if (facture.getStatutPaiement() == null) {
+//            facture.setStatutPaiement(StatutPaiement.EN_ATTENTE);
+//        }
+//
+//        // facture JPA Entity
+//        Facture savedFacture = factureRepository.save(facture);
+//
+//        log.info("Facture créée avec succès avec l'ID : {}", savedFacture.getId());
+//
+//        // Convert savedFacture JPA Entity into DTO object
+//        return factureMapper.toDTO(savedFacture);
+//    }
+
     @Override
     public FactureDTO createFacture(FactureCreationDTO factureCreationDTO) {
         log.info("Création d'une nouvelle facture le : {}", factureCreationDTO.getDate());
 
-        // Convert factureCreationDTO to facture JPA Entity
+        // ✅ RÉCUPÉRER LES ENTITÉS COMPLÈTES
+        Patient patient = patientRepository.findById(factureCreationDTO.getPatientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient non trouvé avec l'ID : " + factureCreationDTO.getPatientId()));
+
+        CadreAdministratif cadreAdministratif = cadreAdministratifRepository.findById(factureCreationDTO.getCadreAdministratifId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cadre administratif non trouvé avec l'ID : " + factureCreationDTO.getCadreAdministratifId()));
+
+        // Convert DTO to Entity
         Facture facture = factureMapper.toEntity(factureCreationDTO);
 
-        // Générer un numéro de facture unique
+        // ✅ ASSIGNER LES ENTITÉS COMPLÈTES
+        facture.setPatient(patient);
+        facture.setCadreAdministratif(cadreAdministratif);
+
+        // Générer numéro unique
         facture.setNumero("FACT-" + System.currentTimeMillis());
 
-        // Définir le statut par défaut si non spécifié
+        // Statut par défaut
         if (facture.getStatutPaiement() == null) {
             facture.setStatutPaiement(StatutPaiement.EN_ATTENTE);
         }
 
-        // facture JPA Entity
+        // Sauvegarder
         Facture savedFacture = factureRepository.save(facture);
 
         log.info("Facture créée avec succès avec l'ID : {}", savedFacture.getId());
 
-        // Convert savedFacture JPA Entity into DTO object
         return factureMapper.toDTO(savedFacture);
     }
+
+
 
     @Override
     public FactureDTO getFactureById(Long factureId) {

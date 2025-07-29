@@ -20,7 +20,8 @@ public interface PrescriptionService {
     List<PrescriptionDTO> getPrescriptionsByDate(LocalDate date);
 
     // Gestion des médicaments
-    void ajouterMedicamentAPrescription(Long prescriptionId, MedicamentDTO medicamentDTO);
+//    void ajouterMedicamentAPrescription(Long prescriptionId, MedicamentDTO medicamentDTO);
+    void ajouterMedicamentAPrescription(Long prescriptionId, Long medicamentId);
     void supprimerMedicamentDePrescription(Long prescriptionId, Long medicamentId);
 
     // Renouvellement

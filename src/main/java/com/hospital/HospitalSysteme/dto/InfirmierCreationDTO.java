@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,5 +21,9 @@ public class InfirmierCreationDTO extends UserCreationDTO{
 
     @NotNull(message = "L'ID du département est obligatoire")
     private Long departementId;
+
+    // AJOUTEZ CE CHAMP
+    @NotNull(message = "Le salaire est obligatoire")
+    private BigDecimal salaire;
 
 }

@@ -17,6 +17,7 @@ public interface FactureMapper {
     @Mapping(source = "patient.prenom", target = "patientPrenom")
     @Mapping(source = "cadreAdministratif.id", target = "cadreAdministratifId")
     @Mapping(source = "cadreAdministratif.nom", target = "cadreAdministratifNom")
+    @Mapping(source = "cadreAdministratif.prenom", target = "cadreAdministratifPrenom")  // ← AJOUTER CECI
     FactureDTO toDTO(Facture facture);
 
 
@@ -29,6 +30,7 @@ public interface FactureMapper {
     @Mapping(source = "patient.prenom", target = "patientPrenom")
     @Mapping(source = "cadreAdministratif.id", target = "cadreAdministratifId")
     @Mapping(source = "cadreAdministratif.nom", target = "cadreAdministratifNom")
+    @Mapping(source = "cadreAdministratif.prenom", target = "cadreAdministratifPrenom")
     @Mapping(source = "serviceHospitaliers", target = "serviceDTOS") // Changez "services" par le nom correct
     @Mapping(source = "patient", target = "patientDTO") // Changez "patient" par le nom correct
         // Supprimez cette ligne qui est en double

@@ -27,7 +27,8 @@ public interface CommandeService {
 
     // Opérations de gestion
     CommandeDTO changerStatutCommande(Long commandeId, StatutCommande nouveauStatut);
-    CommandeDTO enregistrerLivraison(Long commandeId, LocalDateTime dateLivraison);
+//    CommandeDTO enregistrerLivraison(Long commandeId, LocalDateTime dateLivraison);
+    CommandeDTO enregistrerLivraison(Long commandeId);
     CommandeDTO annulerCommande(Long commandeId);
 
     // Statistiques

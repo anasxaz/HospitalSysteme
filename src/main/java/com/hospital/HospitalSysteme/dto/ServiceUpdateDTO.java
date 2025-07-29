@@ -17,6 +17,9 @@ public class ServiceUpdateDTO {
     @DecimalMin(value = "0.0", inclusive = false, message = "Le tarif doit être supérieur à 0")
     private BigDecimal tarif;
 
+    @DecimalMin(value = "0.0", inclusive = false, message = "Le coût doit être supérieur à 0")
+    private BigDecimal cout;  // Champ cout obligatoire pour l'update
+
     private String categorie;
     private Boolean actif;
 }

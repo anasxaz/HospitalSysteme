@@ -11,6 +11,8 @@ import java.util.Map;
 
 public interface DashboardService {
 
+
+    // ====================== MÉTHODES EXISTANTES (à garder) ======================
     /**
      * Récupère les statistiques globales pour le tableau de bord
      * @return DTO contenant toutes les statistiques principales
@@ -50,4 +52,35 @@ public interface DashboardService {
      * @return Map contenant les tendances par mois
      */
     Map<String, Object> getActivityTrends(int nombreMois);
+
+
+    // ====================== NOUVELLES MÉTHODES POUR FILTRAGE TEMPOREL ======================
+    // Récemment ajouté :
+    /**
+     * Statistiques pour un mois spécifique
+     */
+    DashboardStatsDTO getStatsByMonth(int year, int month);
+
+    /**
+     * Statistiques pour une année complète
+     */
+    DashboardStatsDTO getStatsByYear(int year);
+
+    /**
+     * Statistiques pour une date spécifique
+     */
+    DashboardStatsDTO getStatsByDate(LocalDate date);
+
+
+    /**
+     * Statistiques département avec filtrage temporel
+     */
+    List<DepartementStatsDTO> getStatsByDepartement(LocalDate dateDebut, LocalDate dateFin);
+
+    /**
+     * Statistiques médecin avec filtrage temporel
+     */
+    MedecinStatsDTO getStatsByMedecin(Long medecinId, LocalDate dateDebut, LocalDate dateFin);
+
+
 }

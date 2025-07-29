@@ -16,7 +16,7 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
     List<Facture> findByStatutPaiement(StatutPaiement statutPaiement);
     List<Facture> findByCadreAdministratifId(Long cadreAdministratifId);
 
-    @Query("SELECT f FROM Facture f WHERE f.date BETWEEN :debut AND :fin")
+    @Query("SELECT f FROM Facture f WHERE f.date BETWEEN :dateDebut AND :dateFin")
     List<Facture> findByDateBetween(LocalDateTime dateDebut, LocalDateTime dateFin);
 
     @Query("SELECT SUM(f.montantTotal) FROM Facture f WHERE f.statutPaiement = :statut")
@@ -66,5 +66,38 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
 
 
     List<Facture> findByDateBetweenAndStatutPaiement(LocalDateTime debut, LocalDateTime fin, StatutPaiement statutPaiement);
+
+//    @Query("SELECT SUM(f.montantTotal) FROM Facture f " +
+//            "WHERE f.medecin.id = :medecinId " +
+//            "AND f.dateCreation BETWEEN :debut AND :fin")
+//    BigDecimal sumMontantByMedecinIdAndDateBetween(@Param("medecinId") Long medecinId,
+//                                                   @Param("debut") LocalDateTime debut,
+//                                                   @Param("fin") LocalDateTime fin);
+    @Query("SELECT SUM(f.montantTotal) FROM Facture f " +
+            "JOIN f.patient p " +
+            "JOIN p.dossierMedical dm " +
+            "JOIN dm.consultations c " +
+            "WHERE c.medecin.id = :medecinId AND f.dateCreation BETWEEN :debut AND :fin")
+    BigDecimal sumMontantByMedecinIdAndDateBetween(@Param("medecinId") Long medecinId,
+                                                   @Param("debut") LocalDateTime debut,
+                                                   @Param("fin") LocalDateTime fin);
+
+    // Si vous avez une relation avec département dans Facture :
+//    @Query("SELECT SUM(f.montantTotal) FROM Facture f " +
+//            "WHERE f.medecin.departement.id = :departementId " +
+//            "AND f.dateCreation BETWEEN :debut AND :fin")
+//    BigDecimal sumMontantByDepartementAndDateBetween(@Param("departementId") Long departementId,
+//                                                     @Param("debut") LocalDateTime debut,
+//                                                     @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT SUM(f.montantTotal) FROM Facture f " +
+            "JOIN f.patient p " +
+            "JOIN p.dossierMedical dm " +
+            "JOIN dm.consultations c " +
+            "JOIN c.medecin m " +
+            "WHERE m.departement.id = :departementId AND f.dateCreation BETWEEN :debut AND :fin")
+    BigDecimal sumMontantByDepartementAndDateBetween(@Param("departementId") Long departementId,
+                                                     @Param("debut") LocalDateTime debut,
+                                                     @Param("fin") LocalDateTime fin);
 
 }

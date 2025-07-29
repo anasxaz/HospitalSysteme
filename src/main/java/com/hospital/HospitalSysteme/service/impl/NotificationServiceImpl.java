@@ -2,11 +2,9 @@ package com.hospital.HospitalSysteme.service.impl;
 
 import com.hospital.HospitalSysteme.dto.NotificationCreationDTO;
 import com.hospital.HospitalSysteme.dto.NotificationDTO;
-import com.hospital.HospitalSysteme.entity.Notification;
-import com.hospital.HospitalSysteme.entity.PlanDeSoins;
-import com.hospital.HospitalSysteme.entity.RendezVous;
-import com.hospital.HospitalSysteme.entity.User;
+import com.hospital.HospitalSysteme.entity.*;
 import com.hospital.HospitalSysteme.entity.enums.StatutNotification;
+import com.hospital.HospitalSysteme.entity.enums.StatutPaiement;
 import com.hospital.HospitalSysteme.entity.enums.TypeNotification;
 import com.hospital.HospitalSysteme.exception.ResourceNotFoundException;
 import com.hospital.HospitalSysteme.mapper.NotificationMapper;
@@ -53,19 +51,40 @@ public class NotificationServiceImpl implements NotificationService {
 
 
 
+//    @Override
+//    public NotificationDTO createNotification(NotificationCreationDTO notificationCreationDTO) {
+//        log.info("Création d'une nouvelle notification intitulé : {}", notificationCreationDTO.getTitre());
+//
+//        // Convert notificationCreationDTO to notification JPA Entity
+//        Notification notification = notificationMapper.toEntity(notificationCreationDTO);
+//
+//        // plan de soins JPA Entity
+//        Notification savedNotification = notificationRepository.save(notification);
+//
+//        log.info("Notification créée avec succès avec l'ID : {}", savedNotification.getId());
+//
+//        // Convert savedPlanDeSoins JPA Entity into DTO object
+//        return notificationMapper.toDTO(savedNotification);
+//    }
+
     @Override
     public NotificationDTO createNotification(NotificationCreationDTO notificationCreationDTO) {
         log.info("Création d'une nouvelle notification intitulé : {}", notificationCreationDTO.getTitre());
 
-        // Convert notificationCreationDTO to notification JPA Entity
+        // ✅ ÉTAPE 1 : Récupérer l'utilisateur AVANT le mapping
+        User user = userRepository.findById(notificationCreationDTO.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé avec l'ID : " + notificationCreationDTO.getUserId()));
+
+        // ✅ ÉTAPE 2 : Convert DTO to Entity
         Notification notification = notificationMapper.toEntity(notificationCreationDTO);
 
-        // plan de soins JPA Entity
+        // ✅ ÉTAPE 3 : Assigner l'utilisateur manuellement (CRITIQUE !)
+        notification.setUser(user);
+
+        // ✅ ÉTAPE 4 : Sauvegarder
         Notification savedNotification = notificationRepository.save(notification);
 
         log.info("Notification créée avec succès avec l'ID : {}", savedNotification.getId());
-
-        // Convert savedPlanDeSoins JPA Entity into DTO object
         return notificationMapper.toDTO(savedNotification);
     }
 
@@ -316,11 +335,12 @@ public class NotificationServiceImpl implements NotificationService {
         // Créer la notification
         Notification notification = new Notification();
         notification.setTitre("Rappel de rendez-vous");
-        notification.setContenu("Vous avez un rendez-vous prévu le " +
+        notification.setMessage("Vous avez un rendez-vous prévu le " +
                 rendezVous.getDateHeure().format(DateTimeFormatter.ofPattern("dd/MM/yyyy à HH:mm")) +
                 " avec Dr. " + rendezVous.getMedecin().getNom() + " " + rendezVous.getMedecin().getPrenom());
-        notification.setType(String.valueOf(TypeNotification.RENDEZ_VOUS));
+        notification.setType(TypeNotification.RENDEZ_VOUS);
         notification.setStatut(StatutNotification.NON_LUE);
+        notification.setDateEnvoi(LocalDateTime.now());  // ✅ AJOUTER CECI !
         notification.setUser(rendezVous.getPatient());
 
         // Sauvegarder la notification
@@ -335,21 +355,127 @@ public class NotificationServiceImpl implements NotificationService {
     // De la part de Claude pour s'inspirer
     @Override
     public NotificationDTO envoyerNotificationConsultation(Long consultationId) {
-        return null;
+        log.info("Envoi d'une notification pour la consultation avec l'ID : {}", consultationId);
+
+        // Récupérer la consultation
+        Consultation consultation = consultationRepository.findById(consultationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Consultation non trouvée avec l'ID : " + consultationId));
+
+        // Créer la notification
+        Notification notification = new Notification();
+        notification.setTitre("Rappel de consultation");
+        notification.setMessage("Vous avez un rendez-vous prévu le " +
+                consultation.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy à HH:mm")) +
+                " avec Dr. " + consultation.getMedecin().getNom() + " " + consultation.getMedecin().getPrenom());
+        notification.setType(TypeNotification.CONSULTATION);
+        notification.setStatut(StatutNotification.NON_LUE);
+        notification.setDateEnvoi(LocalDateTime.now());  // ✅ AJOUTER CECI !
+        notification.setUser(consultation.getMedecin());
+
+        // Sauvegarder la notification
+        Notification savedNotification = notificationRepository.save(notification);
+
+        log.info("Notification de consultation envoyée avec succès avec l'ID : {}", savedNotification.getId());
+
+        return notificationMapper.toDTO(savedNotification);
     }
 
     // Je ne sais pas
     // De la part de Claude pour s'inspirer
+//    @Override
+//    public NotificationDTO envoyerNotificationPrescription(Long prescriptionId) {
+//        log.info("Envoi d'une notification pour la prescription avec l'ID : {}", prescriptionId);
+//
+//        // Récupérer la prescription
+//        Prescription prescription = PrescriptionRepository.findById(prescriptionId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
+//
+//        // Créer la notification
+//        Notification notification = new Notification();
+//        notification.setTitre("Rappel de prescription");
+//        notification.setMessage("Vous avez un rendez-vous prévu le " +
+//                prescription.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy à HH:mm")) +
+//                " avec Dr. " + prescription.get().getNom() + " " + prescription.getMedecin().getPrenom());
+//        notification.setType(TypeNotification.CONSULTATION);
+//        notification.setStatut(StatutNotification.NON_LUE);
+//        notification.setDateEnvoi(LocalDateTime.now());  // ✅ AJOUTER CECI !
+//        notification.setUser(consultation.getMedecin());
+//
+//        // Sauvegarder la notification
+//        Notification savedNotification = notificationRepository.save(notification);
+//
+//        log.info("Notification de consultation envoyée avec succès avec l'ID : {}", savedNotification.getId());
+//
+//        return notificationMapper.toDTO(savedNotification);
+//    }
     @Override
     public NotificationDTO envoyerNotificationPrescription(Long prescriptionId) {
-        return null;
+        log.info("Envoi d'une notification pour la prescription avec l'ID : {}", prescriptionId);
+
+        // Récupérer la prescription
+        Prescription prescription = prescriptionRepository.findById(prescriptionId)  // ✅ Nom correct
+                .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
+
+        // Récupérer le patient via consultation
+        User patient = prescription.getConsultation().getMedecin(); // ✅ Via consultation
+
+        // Créer la notification
+        Notification notification = new Notification();
+        notification.setTitre("Nouvelle prescription");
+        notification.setMessage("Une nouvelle prescription vous a été délivrée le " +
+                prescription.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) +  // ✅ LocalDate
+                " par Dr. " + prescription.getConsultation().getMedecin().getNom() +
+                " " + prescription.getConsultation().getMedecin().getPrenom() +
+                ". Instructions: " + prescription.getInstructions());
+        notification.setType(TypeNotification.PRESCRIPTION);  // ✅ Type correct
+        notification.setStatut(StatutNotification.NON_LUE);
+        notification.setDateEnvoi(LocalDateTime.now());
+        notification.setUser(patient);  // ✅ Patient reçoit la notification
+
+        // Sauvegarder la notification
+        Notification savedNotification = notificationRepository.save(notification);
+
+        log.info("Notification de prescription envoyée avec succès avec l'ID : {}", savedNotification.getId());
+        return notificationMapper.toDTO(savedNotification);
     }
 
     // Je ne sais pas
     // De la part de Claude pour s'inspirer
     @Override
     public NotificationDTO envoyerNotificationFacture(Long factureId) {
-        return null;
+        log.info("Envoi d'une notification pour la facture avec l'ID : {}", factureId);
+
+        // Récupérer la facture
+        Facture facture = factureRepository.findById(factureId)
+                .orElseThrow(() -> new ResourceNotFoundException("Facture non trouvée avec l'ID : " + factureId));
+
+        // Créer la notification
+        Notification notification = new Notification();
+        notification.setTitre("Nouvelle facture disponible");
+
+        // Message personnalisé selon le statut directement
+        String messageStatut = switch (facture.getStatutPaiement()) {
+            case EN_ATTENTE -> "Paiement en attente. Veuillez procéder au règlement.";
+            case PAYEE -> "Facture payée avec succès. Merci !";
+            case ANNULEE -> "Facture annulée.";
+            default -> "Veuillez vérifier le statut de votre facture.";
+        };
+
+        notification.setMessage("Facture n° " + facture.getNumero() +
+                " du " + facture.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) +
+                ". Montant: " + facture.getMontantTotal() + " DH. " +
+                messageStatut);
+
+        notification.setType(TypeNotification.FACTURATION);
+        notification.setStatut(StatutNotification.NON_LUE);
+        notification.setDateEnvoi(LocalDateTime.now());
+        notification.setUser(facture.getPatient());
+
+        // Sauvegarder la notification
+        Notification savedNotification = notificationRepository.save(notification);
+
+        log.info("Notification de facture envoyée avec succès avec l'ID : {}", savedNotification.getId());
+        return notificationMapper.toDTO(savedNotification);
     }
 
     // Je ne sais pas
@@ -365,12 +491,12 @@ public class NotificationServiceImpl implements NotificationService {
         // Créer la notification
         Notification notification = new Notification();
         notification.setTitre("Nouveau plan de soins");
-        notification.setContenu("Un plan de soins a été créé ou mis à jour pour vous. " +
+        notification.setMessage("Un plan de soins a été créé ou mis à jour pour vous. " +
                 "Période : du " + planDeSoins.getDateDebut().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) +
                 " au " + planDeSoins.getDateFin().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) +
                 ". Infirmier(ère) responsable : " + planDeSoins.getInfirmier().getPrenom() + " " +
                 planDeSoins.getInfirmier().getNom());
-        notification.setType(String.valueOf(TypeNotification.PLAN_DE_SOINS));
+        notification.setType(TypeNotification.PLAN_DE_SOINS);
         notification.setStatut(StatutNotification.NON_LUE);
         notification.setDateEnvoi(LocalDateTime.now());
         notification.setUser(planDeSoins.getPatient());
@@ -396,9 +522,10 @@ public class NotificationServiceImpl implements NotificationService {
         // Créer la notification
         Notification notification = new Notification();
         notification.setTitre(titre);
-        notification.setContenu(message);
-        notification.setType(String.valueOf(TypeNotification.SYSTEME));
+        notification.setMessage(message);
+        notification.setType(TypeNotification.SYSTEME);
         notification.setStatut(StatutNotification.NON_LUE);
+        notification.setDateEnvoi(LocalDateTime.now());  // ✅ AJOUTER CECI !
         notification.setUser(user);
 
         // Sauvegarder la notification

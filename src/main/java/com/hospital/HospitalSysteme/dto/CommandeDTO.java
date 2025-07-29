@@ -24,5 +24,6 @@ public class CommandeDTO {
     private String fournisseur;
     private Long cadreAdministratifId;
     private String cadreAdministratifNom;
+    private String cadreAdministratifPrenom;   // ← AJOUTER
 
 }

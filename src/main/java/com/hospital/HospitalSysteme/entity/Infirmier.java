@@ -21,6 +21,10 @@ public class Infirmier extends Personnel{
     @Column(length = 50, nullable = false)
     private String niveauQualification;
 
+    // AJOUTEZ CE CHAMP
+    @Column(length = 50)
+    private String numeroOrdre;
+
     // Relation avec Plan de soins
     @OneToMany(mappedBy = "infirmier", cascade = CascadeType.ALL)
     private List<PlanDeSoins> planDeSoins = new ArrayList<>();

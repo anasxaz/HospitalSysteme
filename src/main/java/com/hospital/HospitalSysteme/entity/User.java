@@ -61,6 +61,10 @@ public abstract class User {
     @Column(nullable = false)
     private ProfilUser profil;
 
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "type_utilisateur", nullable = false, insertable = false, updatable = false)
+//    private TypeUtilisateur typeUtilisateur;
+
     @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime dateCreation;    // TIMESTAMP <=> LocalDateTime  :  pour les dates avec heure (comme date de rendez-vous)

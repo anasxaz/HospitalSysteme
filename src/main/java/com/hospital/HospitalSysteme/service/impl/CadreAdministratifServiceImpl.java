@@ -2,6 +2,7 @@ package com.hospital.HospitalSysteme.service.impl;
 
 import com.hospital.HospitalSysteme.dto.*;
 import com.hospital.HospitalSysteme.entity.*;
+import com.hospital.HospitalSysteme.entity.enums.ProfilUser;
 import com.hospital.HospitalSysteme.entity.enums.StatutPaiement;
 import com.hospital.HospitalSysteme.entity.enums.StatutRendezVous;
 import com.hospital.HospitalSysteme.exception.ResourceNotFoundException;
@@ -26,6 +27,8 @@ public class CadreAdministratifServiceImpl implements CadreAdministratifService 
     private final CadreAdministratifRepository cadreAdministratifRepository;
     private final DepartementRepository departementRepository;
     private final FactureRepository factureRepository;
+    private final MedecinRepository medecinRepository;
+    private final PatientRepository patientRepository;
 
 
 
@@ -36,26 +39,95 @@ public class CadreAdministratifServiceImpl implements CadreAdministratifService 
 
 
 
+//    @Override
+//    public CadreAdministratifDTO createCadreAdministratif(CadreAdministratifCreationDTO cadreAdministratifCreationDTO) {
+//        log.info("Création d'un nouveau cadre administratif avec l'email : {}", cadreAdministratifCreationDTO.getEmail());
+//
+//        // Vérifier si l'email existe déjà
+//        if (cadreAdministratifRepository.existsByEmail(cadreAdministratifCreationDTO.getEmail())) {
+//            throw new IllegalArgumentException("Un cadre administratif avec cet email existe déjà : " + cadreAdministratifCreationDTO.getEmail());
+//        }
+//
+//        // Convert cadreAdministratifCreationDTO to patient JPA Entity
+//        CadreAdministratif cadreAdministratif = cadreAdministratifMapper.toEntity(cadreAdministratifCreationDTO);
+//
+//        // cadreAdministratif JPA Entity
+//        CadreAdministratif savedCadre = cadreAdministratifRepository.save(cadreAdministratif);
+//
+//        log.info("Cadre administratif créé avec succès avec l'ID : {}", savedCadre.getId());
+//
+//        // Convert saved cadre administratif JPA Entity into DTO object
+//        return cadreAdministratifMapper.toDTO(savedCadre);
+//    }
+
+
+    // 2ème tentative :
+//    @Override
+//    public CadreAdministratifDTO createCadreAdministratif(CadreAdministratifCreationDTO cadreAdministratifCreationDTO) {
+//        log.info("Création d'un nouveau cadre administratif avec l'email : {}", cadreAdministratifCreationDTO.getEmail());
+//
+//        // Vérifier si l'email existe déjà
+//        if (cadreAdministratifRepository.existsByEmail(cadreAdministratifCreationDTO.getEmail())) {
+//            throw new IllegalArgumentException("Un cadre administratif avec cet email existe déjà : " + cadreAdministratifCreationDTO.getEmail());
+//        }
+//
+//        // Convert cadreAdministratifCreationDTO to cadreAdministratif JPA Entity
+//        CadreAdministratif cadreAdministratif = cadreAdministratifMapper.toEntity(cadreAdministratifCreationDTO);
+//
+//        // AJOUTEZ CES LIGNES pour définir les valeurs par défaut
+//        cadreAdministratif.setProfil(ProfilUser.PERSONNEL);
+//        cadreAdministratif.setDateEmbauche(LocalDate.now());
+//        cadreAdministratif.setPoste("Cadre Administratif");
+//
+//        // Assigner le département
+//        Departement departement = departementRepository.findById(cadreAdministratifCreationDTO.getDepartementId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + cadreAdministratifCreationDTO.getDepartementId()));
+//        cadreAdministratif.setDepartement(departement);
+//
+//        // cadreAdministratif JPA Entity
+//        CadreAdministratif savedCadre = cadreAdministratifRepository.save(cadreAdministratif);
+//
+//        log.info("Cadre administratif créé avec succès avec l'ID : {}", savedCadre.getId());
+//
+//        // Convert saved cadre administratif JPA Entity into DTO object
+//        return cadreAdministratifMapper.toDTO(savedCadre);
+//    }
+
+
     @Override
     public CadreAdministratifDTO createCadreAdministratif(CadreAdministratifCreationDTO cadreAdministratifCreationDTO) {
         log.info("Création d'un nouveau cadre administratif avec l'email : {}", cadreAdministratifCreationDTO.getEmail());
 
-        // Vérifier si l'email existe déjà
         if (cadreAdministratifRepository.existsByEmail(cadreAdministratifCreationDTO.getEmail())) {
             throw new IllegalArgumentException("Un cadre administratif avec cet email existe déjà : " + cadreAdministratifCreationDTO.getEmail());
         }
 
-        // Convert cadreAdministratifCreationDTO to patient JPA Entity
         CadreAdministratif cadreAdministratif = cadreAdministratifMapper.toEntity(cadreAdministratifCreationDTO);
 
-        // cadreAdministratif JPA Entity
+        // AJOUTEZ CES LIGNES pour définir les valeurs par défaut
+        cadreAdministratif.setProfil(ProfilUser.PERSONNEL);
+        cadreAdministratif.setDateEmbauche(LocalDate.now());
+        cadreAdministratif.setPoste("Cadre Administratif");
+        // AJOUTEZ CETTE LIGNE pour le salaire
+        cadreAdministratif.setSalaire(cadreAdministratifCreationDTO.getSalaire());
+        cadreAdministratif.setNiveauResponsabilite(cadreAdministratifCreationDTO.getNiveauResponsabilite());
+
+        // Assigner le département
+        Departement departement = departementRepository.findById(cadreAdministratifCreationDTO.getDepartementId())
+                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + cadreAdministratifCreationDTO.getDepartementId()));
+        cadreAdministratif.setDepartement(departement);
+
         CadreAdministratif savedCadre = cadreAdministratifRepository.save(cadreAdministratif);
 
         log.info("Cadre administratif créé avec succès avec l'ID : {}", savedCadre.getId());
 
-        // Convert saved cadre administratif JPA Entity into DTO object
         return cadreAdministratifMapper.toDTO(savedCadre);
     }
+
+
+
+
+
 
     @Override
     public CadreAdministratifDTO getCadreAdministratifById(Long cadreAdministratifId) {
@@ -94,42 +166,73 @@ public class CadreAdministratifServiceImpl implements CadreAdministratifService 
 
     }
 
+//    @Override
+//    public RendezVousDTO createRendezVous(RendezVousCreationDTO rendezVousCreationDTO) {
+//        log.info("Création d'un nouveau rendez vous ");
+//
+//        // Convert rendezVousCreationDTO to rendezVous JPA Entity
+//        RendezVous rendezVous = rendezVousMapper.toEntity(rendezVousCreationDTO);
+//
+//        // rendezVous JPA Entity
+//        RendezVous savedRendezVous = rendezVousRepository.save(rendezVous);
+//
+//        log.info("Rendez vous créé avec succès!");
+//
+//        // Convert saved rendez vous JPA Entity into DTO object
+//        return rendezVousMapper.toDTO(savedRendezVous);
+//    }
+
     @Override
     public RendezVousDTO createRendezVous(RendezVousCreationDTO rendezVousCreationDTO) {
         log.info("Création d'un nouveau rendez vous ");
 
-        // Convert rendezVousCreationDTO to rendezVous JPA Entity
         RendezVous rendezVous = rendezVousMapper.toEntity(rendezVousCreationDTO);
 
-        // rendezVous JPA Entity
+        // AJOUTEZ CES LIGNES - Le mapper ne récupère pas les entités automatiquement
+
+        // Récupérer le patient
+        Patient patient = patientRepository.findById(rendezVousCreationDTO.getPatientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient non trouvé"));
+        rendezVous.setPatient(patient);
+
+        // Récupérer le médecin - C'EST ÇA QUI MANQUE !
+        Medecin medecin = medecinRepository.findById(rendezVousCreationDTO.getMedecinId())
+                .orElseThrow(() -> new ResourceNotFoundException("Médecin non trouvé"));
+        rendezVous.setMedecin(medecin);
+
         RendezVous savedRendezVous = rendezVousRepository.save(rendezVous);
-
-        log.info("Rendez vous créé avec succès!");
-
-        // Convert saved rendez vous JPA Entity into DTO object
         return rendezVousMapper.toDTO(savedRendezVous);
     }
 
     // Je ne sais pas
     // De la part de Claude
-    @Override
-    public void updateRendezVousStatut(Long rendezVousId, String statut) {
-        log.info("Mise à jour du statut du rendez-vous avec l'ID : {} vers : {}", rendezVousId, statut);
+//    @Override
+//    public void updateRendezVousStatut(Long rendezVousId, String statut) {
+//        log.info("Mise à jour du statut du rendez-vous avec l'ID : {} vers : {}", rendezVousId, statut);
+//
+//        RendezVous rendezVous = rendezVousRepository.findById(rendezVousId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Rendez-vous non trouvé avec l'ID : " + rendezVousId));
+//
+//        try {
+//            StatutRendezVous nouveauStatut = StatutRendezVous.valueOf(statut.toUpperCase());
+//            rendezVous.setStatut(nouveauStatut);
+//            rendezVousRepository.save(rendezVous);
+//
+//            log.info("Statut du rendez-vous mis à jour avec succès");
+//        } catch (IllegalArgumentException e) {
+//            log.error("Statut de rendez-vous invalide : {}", statut, e);
+//            throw new IllegalArgumentException("Statut de rendez-vous invalide : " + statut);
+//        }
+//
+//    }
 
+    @Override
+    public void updateRendezVousStatut(Long rendezVousId, StatutRendezVous statut) {
         RendezVous rendezVous = rendezVousRepository.findById(rendezVousId)
                 .orElseThrow(() -> new ResourceNotFoundException("Rendez-vous non trouvé avec l'ID : " + rendezVousId));
 
-        try {
-            StatutRendezVous nouveauStatut = StatutRendezVous.valueOf(statut.toUpperCase());
-            rendezVous.setStatut(nouveauStatut);
-            rendezVousRepository.save(rendezVous);
-
-            log.info("Statut du rendez-vous mis à jour avec succès");
-        } catch (IllegalArgumentException e) {
-            log.error("Statut de rendez-vous invalide : {}", statut, e);
-            throw new IllegalArgumentException("Statut de rendez-vous invalide : " + statut);
-        }
-
+        rendezVous.setStatut(statut);
+        rendezVousRepository.save(rendezVous);
     }
 
     // Je ne sais pas

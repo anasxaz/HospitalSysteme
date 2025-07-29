@@ -27,8 +27,8 @@ public class PlanningDTO {
 
     // On peut conserver ces champs si on souhaite toujours afficher
     // le département auquel appartiennent les cadres administratifs
-    private Long departementId;
-    private String departementNom;
+//    private Long departementId;
+//    private String departementNom;
 
 
 }

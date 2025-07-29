@@ -236,7 +236,7 @@ public DepartementDTO updateDepartement(Long departementId, DepartementUpdateDTO
         int nombreMedecins = medecinRepository.countByDepartementId(departementId);
 
         // Compter le nombre d'infirmiers
-        int nombreInfirmiers = infirmierRepository.countByDepartementId(departementId);
+        int nombreInfirmiers = Math.toIntExact(infirmierRepository.countByDepartementId(departementId));
 
         // Compter le nombre de patients (via les consultations du département)
         int nombrePatients = patientRepository.countDistinctByConsultationsMedecinDepartementId(departementId);
@@ -245,7 +245,7 @@ public DepartementDTO updateDepartement(Long departementId, DepartementUpdateDTO
         int nombreConsultations = consultationRepository.countByMedecinDepartementId(departementId);
 
         // Compter le nombre de rendez-vous
-        int nombreRendezVous = rendezVousRepository.countByMedecinDepartementId(departementId);
+        int nombreRendezVous = Math.toIntExact(rendezVousRepository.countByMedecinDepartementId(departementId));
 
         // Créer et remplir le DTO de statistiques
         DepartementStatsDTO statsDTO = new DepartementStatsDTO();

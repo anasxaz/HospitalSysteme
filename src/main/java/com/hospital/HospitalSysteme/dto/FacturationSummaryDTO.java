@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Map;
 
 @Getter
@@ -22,5 +23,11 @@ public class FacturationSummaryDTO {
     private Long facturesAnnulees;
     private Map<String, BigDecimal> revenusParService;
     private Map<String, BigDecimal> revenusParMois;
+
+    // Nouveaux champs qu'on a ajouté
+    private LocalDate dateDebut;
+    private LocalDate dateFin;
+    private Double tauxCollecte; // Pourcentage des montants collectés
+    private BigDecimal moyenneFactureParPatient;
 
 }

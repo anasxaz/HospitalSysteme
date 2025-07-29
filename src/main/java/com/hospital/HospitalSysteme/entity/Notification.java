@@ -2,6 +2,7 @@ package com.hospital.HospitalSysteme.entity;
 
 
 import com.hospital.HospitalSysteme.entity.enums.StatutNotification;
+import com.hospital.HospitalSysteme.entity.enums.TypeNotification;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,8 +27,8 @@ public class Notification {
     @Column(length = 100, nullable = false)
     private String titre;
 
-    @Column(nullable = false)
-    private String contenu;  // c'est le message
+    @Column(nullable = false, name = "message")
+    private String message;  // c'est le message
 
     @Column(nullable = false)
     private LocalDateTime dateEnvoi;
@@ -36,8 +37,9 @@ public class Notification {
 //    @Column(nullable = false)
     private StatutNotification statut = StatutNotification.NON_LUE;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 50, nullable = false)
-    private String type;
+    private TypeNotification type;   // ← Changer String en TypeNotification
 
     // Relation avec User
     @ManyToOne

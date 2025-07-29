@@ -94,25 +94,25 @@ public class CommandeController {
         return ResponseEntity.ok(commandesList);
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Mettre à jour une commande",
-            description = "Met à jour les informations d'une commande existante (date de livraison, statut)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Commande mise à jour avec succès",
-                    content = @Content(schema = @Schema(implementation = CommandeDTO.class))),
-            @ApiResponse(responseCode = "404", description = "Commande non trouvée"),
-            @ApiResponse(responseCode = "400", description = "Données invalides")
-    })
-    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
-    public ResponseEntity<CommandeDTO> updateCommande(
-            @Parameter(description = "ID de la commande") @PathVariable Long id,
-            @Parameter(description = "Informations à mettre à jour")
-            @Valid @RequestBody CommandeUpdateDTO commandeUpdateDTO) {
-        log.info("Demande de mise à jour de la commande avec l'ID: {}", id);
-
-        CommandeDTO updatedCommande = commandeService.updateCommande(id, commandeUpdateDTO);
-        return ResponseEntity.ok(updatedCommande);
-    }
+//    @PutMapping("/{id}")
+//    @Operation(summary = "Mettre à jour une commande",
+//            description = "Met à jour les informations d'une commande existante (date de livraison, statut)")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Commande mise à jour avec succès",
+//                    content = @Content(schema = @Schema(implementation = CommandeDTO.class))),
+//            @ApiResponse(responseCode = "404", description = "Commande non trouvée"),
+//            @ApiResponse(responseCode = "400", description = "Données invalides")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
+//    public ResponseEntity<CommandeDTO> updateCommande(
+//            @Parameter(description = "ID de la commande") @PathVariable Long id,
+//            @Parameter(description = "Informations à mettre à jour")
+//            @Valid @RequestBody CommandeUpdateDTO commandeUpdateDTO) {
+//        log.info("Demande de mise à jour de la commande avec l'ID: {}", id);
+//
+//        CommandeDTO updatedCommande = commandeService.updateCommande(id, commandeUpdateDTO);
+//        return ResponseEntity.ok(updatedCommande);
+//    }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Supprimer une commande",
@@ -162,15 +162,20 @@ public class CommandeController {
             @ApiResponse(responseCode = "404", description = "Commande non trouvée")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
-    public ResponseEntity<CommandeDTO> enregistrerLivraison(
-            @Parameter(description = "ID de la commande") @PathVariable Long id,
-            @Parameter(description = "Date et heure de livraison (format: yyyy-MM-dd'T'HH:mm:ss)")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateLivraison) {
-        log.info("Demande d'enregistrement de livraison pour la commande ID: {} à la date: {}", id, dateLivraison);
-
-        CommandeDTO commandeDTO = commandeService.enregistrerLivraison(id, dateLivraison);
+    public ResponseEntity<CommandeDTO> enregistrerLivraison(@PathVariable Long id) {
+        // ✅ JUSTE CLIQUER = DATE ACTUELLE
+        CommandeDTO commandeDTO = commandeService.enregistrerLivraison(id);
         return ResponseEntity.ok(commandeDTO);
     }
+//    public ResponseEntity<CommandeDTO> enregistrerLivraison(
+//            @Parameter(description = "ID de la commande") @PathVariable Long id,
+//            @Parameter(description = "Date et heure de livraison (format: yyyy-MM-dd'T'HH:mm:ss)")
+//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateLivraison) {
+//        log.info("Demande d'enregistrement de livraison pour la commande ID: {} à la date: {}", id, dateLivraison);
+//
+//        CommandeDTO commandeDTO = commandeService.enregistrerLivraison(id, dateLivraison);
+//        return ResponseEntity.ok(commandeDTO);
+//    }
 
     @PutMapping("/{id}/annuler")
     @Operation(summary = "Annuler une commande",

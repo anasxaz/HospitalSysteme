@@ -2,6 +2,7 @@ package com.hospital.HospitalSysteme.controller;
 
 import com.hospital.HospitalSysteme.dto.*;
 import com.hospital.HospitalSysteme.entity.enums.StatutPaiement;
+import com.hospital.HospitalSysteme.entity.enums.StatutRendezVous;
 import com.hospital.HospitalSysteme.service.CadreAdministratifService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -170,13 +171,22 @@ public class CadreAdministratifController {
     @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
     public ResponseEntity<Void> updateRendezVousStatut(
             @Parameter(description = "ID du rendez-vous") @PathVariable Long id,
-            @Parameter(description = "Nouveau statut (PROGRAMME, CONFIRME, ANNULE, TERMINE)")
-            @RequestParam String statut) {
+            @Parameter(description = "Nouveau statut du rendez-vous")
+            @RequestParam StatutRendezVous statut) { // ← CHANGEMENT ICI : StatutRendezVous au lieu de String
         log.info("Demande de mise à jour du statut du rendez-vous ID: {} vers: {}", id, statut);
 
         cadreAdministratifService.updateRendezVousStatut(id, statut);
         return ResponseEntity.noContent().build();
     }
+//    public ResponseEntity<Void> updateRendezVousStatut(
+//            @Parameter(description = "ID du rendez-vous") @PathVariable Long id,
+//            @Parameter(description = "Nouveau statut (PROGRAMME, CONFIRME, ANNULE, TERMINE)")
+//            @RequestParam String statut) {
+//        log.info("Demande de mise à jour du statut du rendez-vous ID: {} vers: {}", id, statut);
+//
+//        cadreAdministratifService.updateRendezVousStatut(id, statut);
+//        return ResponseEntity.noContent().build();
+//    }
 
     @GetMapping("/rendez-vous/date/{date}")
     @Operation(summary = "Récupérer les rendez-vous par date",

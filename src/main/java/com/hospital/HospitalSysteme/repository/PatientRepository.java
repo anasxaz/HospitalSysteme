@@ -48,7 +48,7 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
 //    Page<Patient> findByNomContaining(String nom, Pageable pageable);
 
-    Long countByDateCreationBetween(LocalDateTime debut, LocalDateTime fin);
+//    Long countByDateCreationBetween(LocalDateTime debut, LocalDateTime fin);
 
     @Query("SELECT p.groupeSanguin, COUNT(p) FROM Patient p GROUP BY p.groupeSanguin")
     List<Object[]> countPatientsByGroupeSanguin();
@@ -75,5 +75,31 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     List<Patient> findForExport(@Param("nom") String nom,
                                 @Param("prenom") String prenom,
                                 @Param("groupeSanguin") String groupeSanguin);
+
+
+//    @Query("SELECT p.groupeSanguin, COUNT(DISTINCT p) FROM Patient p " +
+//            "JOIN Consultation c ON c.patient = p " +
+//            "WHERE c.date BETWEEN :debut AND :fin " +
+//            "GROUP BY p.groupeSanguin")
+//    List<Object[]> countPatientsByGroupeSanguinWithConsultationsBetween(@Param("debut") LocalDateTime debut,
+//                                                                        @Param("fin") LocalDateTime fin);
+    @Query("SELECT p.groupeSanguin, COUNT(DISTINCT p) FROM Patient p " +
+            "JOIN p.dossierMedical dm " +
+            "JOIN dm.consultations c " +
+            "WHERE c.date BETWEEN :debut AND :fin " +
+            "GROUP BY p.groupeSanguin")
+    List<Object[]> countPatientsByGroupeSanguinWithConsultationsBetween(@Param("debut") LocalDateTime debut,
+                                                                        @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT COUNT(p) FROM Patient p " +
+            "WHERE p.dateCreation BETWEEN :debut AND :fin")
+    Long countByDateCreationBetween(@Param("debut") LocalDateTime debut,
+                                    @Param("fin") LocalDateTime fin);
+
+
+//    default Long countByDateCreationBetween(LocalDateTime debut, LocalDateTime fin) {
+//        return 0L; // Implémentation temporaire
+//    }
+
 
 }

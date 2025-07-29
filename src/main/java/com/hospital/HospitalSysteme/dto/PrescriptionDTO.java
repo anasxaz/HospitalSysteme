@@ -15,8 +15,7 @@ import java.time.LocalDate;
 public class PrescriptionDTO {
 
     private Long id;
-    private LocalDate dateDebut;
-    private LocalDate dateFin;
+    private LocalDate date;
     private String posologie;
     private String instructions;
     private StatutPrescription statut;

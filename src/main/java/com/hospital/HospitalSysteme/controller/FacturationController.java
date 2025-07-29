@@ -241,7 +241,22 @@ public class FacturationController {
         return ResponseEntity.ok(factures);
     }
 
-    @GetMapping("/factures/methode-paiement/{methodePaiement}")
+//    @GetMapping("/factures/methode-paiement/{methodePaiement}")
+//    @Operation(summary = "Récupérer les factures par méthode de paiement",
+//            description = "Récupère toutes les factures payées avec une méthode de paiement spécifique")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Factures par méthode de paiement récupérées avec succès")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
+//    public ResponseEntity<List<FactureDTO>> getFacturesByMethodePaiement(
+//            @Parameter(description = "Méthode de paiement") @PathVariable String methodePaiement) {
+//        log.info("Demande de récupération des factures avec la méthode de paiement: {}", methodePaiement);
+//
+//        List<FactureDTO> factures = facturationService.getFacturesByMethodePaiement(methodePaiement);
+//        return ResponseEntity.ok(factures);
+//    }
+
+    @GetMapping("/factures/methode-paiement")  // ← Enlever /{methodePaiement}
     @Operation(summary = "Récupérer les factures par méthode de paiement",
             description = "Récupère toutes les factures payées avec une méthode de paiement spécifique")
     @ApiResponses(value = {
@@ -249,7 +264,10 @@ public class FacturationController {
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF')")
     public ResponseEntity<List<FactureDTO>> getFacturesByMethodePaiement(
-            @Parameter(description = "Méthode de paiement") @PathVariable String methodePaiement) {
+            @Parameter(description = "Méthode de paiement",
+                    schema = @Schema(type = "string",
+                            allowableValues = {"CARTE_BANCAIRE", "CHEQUE", "ESPECES", "VIREMENT"}))
+            @RequestParam String methodePaiement) {  // ← Changer en @RequestParam
         log.info("Demande de récupération des factures avec la méthode de paiement: {}", methodePaiement);
 
         List<FactureDTO> factures = facturationService.getFacturesByMethodePaiement(methodePaiement);

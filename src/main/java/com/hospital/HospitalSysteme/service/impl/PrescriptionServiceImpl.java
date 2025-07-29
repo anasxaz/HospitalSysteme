@@ -56,23 +56,77 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 //    }
 
 
+//    @Override
+//    public PrescriptionDTO createPrescription(PrescriptionCreationDTO prescriptionCreationDTO) {
+//        log.info("Création d'une nouvelle prescription le : {}", prescriptionCreationDTO.getDateDebut());
+//
+//        // Mapper la prescription
+//        Prescription prescription = prescriptionMapper.toEntity(prescriptionCreationDTO);
+//
+//        // Gérer la relation avec le médicament
+//        if (prescriptionCreationDTO.getMedicamentId() != null) {
+//            Medicament medicament = medicamentRepository.findById(prescriptionCreationDTO.getMedicamentId())
+//                    .orElseThrow(() -> new ResourceNotFoundException("Médicament non trouvé avec l'ID : " + prescriptionCreationDTO.getMedicamentId()));
+//
+//            prescription.getMedicaments().add(medicament);
+//            medicament.getPrescriptions().add(prescription);
+//        }
+//
+//        Prescription savedPrescription = prescriptionRepository.save(prescription);
+//
+//        return prescriptionMapper.toDTO(savedPrescription);
+//    }
+
+    //3ème tentative :
+//    @Override
+//    public PrescriptionDTO createPrescription(PrescriptionCreationDTO prescriptionCreationDTO) {
+//        log.info("Création d'une nouvelle prescription le : {}", prescriptionCreationDTO.getDateDebut());
+//
+//        // Mapper la prescription
+//        Prescription prescription = prescriptionMapper.toEntity(prescriptionCreationDTO);
+//
+//        // ✅ NOUVEAU : Gérer PLUSIEURS médicaments dès la création
+//        if (prescriptionCreationDTO.getMedicamentIds() != null && !prescriptionCreationDTO.getMedicamentIds().isEmpty()) {
+//            for (Long medicamentId : prescriptionCreationDTO.getMedicamentIds()) {
+//                Medicament medicament = medicamentRepository.findById(medicamentId)
+//                        .orElseThrow(() -> new ResourceNotFoundException("Médicament non trouvé avec l'ID : " + medicamentId));
+//
+//                prescription.getMedicaments().add(medicament);
+//                medicament.getPrescriptions().add(prescription);
+//            }
+//        }
+//
+//        Prescription savedPrescription = prescriptionRepository.save(prescription);
+//        log.info("Prescription créée avec succès avec l'ID : {}", savedPrescription.getId());
+//
+//        return prescriptionMapper.toDTO(savedPrescription);
+//    }
+
+
+    //4ème tentative :
     @Override
     public PrescriptionDTO createPrescription(PrescriptionCreationDTO prescriptionCreationDTO) {
-        log.info("Création d'une nouvelle prescription le : {}", prescriptionCreationDTO.getDateDebut());
+        log.info("Création d'une nouvelle prescription");
 
         // Mapper la prescription
         Prescription prescription = prescriptionMapper.toEntity(prescriptionCreationDTO);
 
-        // Gérer la relation avec le médicament
-        if (prescriptionCreationDTO.getMedicamentId() != null) {
-            Medicament medicament = medicamentRepository.findById(prescriptionCreationDTO.getMedicamentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Médicament non trouvé avec l'ID : " + prescriptionCreationDTO.getMedicamentId()));
+        // ✅ AJOUTER : Auto-générer la date de prescription
+        prescription.setDate(LocalDate.now());
 
-            prescription.getMedicaments().add(medicament);
-            medicament.getPrescriptions().add(prescription);
+        // Gérer PLUSIEURS médicaments dès la création
+        if (prescriptionCreationDTO.getMedicamentIds() != null && !prescriptionCreationDTO.getMedicamentIds().isEmpty()) {
+            for (Long medicamentId : prescriptionCreationDTO.getMedicamentIds()) {
+                Medicament medicament = medicamentRepository.findById(medicamentId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Médicament non trouvé avec l'ID : " + medicamentId));
+
+                prescription.getMedicaments().add(medicament);
+                medicament.getPrescriptions().add(prescription);
+            }
         }
 
         Prescription savedPrescription = prescriptionRepository.save(prescription);
+        log.info("Prescription créée avec succès avec l'ID : {}", savedPrescription.getId());
 
         return prescriptionMapper.toDTO(savedPrescription);
     }
@@ -99,23 +153,54 @@ public class PrescriptionServiceImpl implements PrescriptionService {
                 .collect(Collectors.toList());
     }
 
+//    @Override
+//    public PrescriptionDTO updatePrescription(Long prescriptionId, PrescriptionUpdateDTO prescriptionUpdateDTO) {
+//        log.info("Mise à jour de la prescription avec l'ID : {}", prescriptionId);
+//
+//        // Récupérer la prescription existante
+//        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
+//
+//        // Mettre à jour les informations de la prescription
+//        prescriptionMapper.updatePrescriptionFromDTO(prescriptionUpdateDTO, prescription);
+//
+//        // Sauvegarder les modifications
+//        Prescription updatedPrescription = prescriptionRepository.save(prescription);
+//
+//        log.info("Prescription mis à jour avec succès");
+//
+//        // Convertir et retourner la prescription mis à jour
+//        return prescriptionMapper.toDTO(updatedPrescription);
+//    }
+
     @Override
     public PrescriptionDTO updatePrescription(Long prescriptionId, PrescriptionUpdateDTO prescriptionUpdateDTO) {
         log.info("Mise à jour de la prescription avec l'ID : {}", prescriptionId);
 
-        // Récupérer la prescription existante
         Prescription prescription = prescriptionRepository.findById(prescriptionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
 
-        // Mettre à jour les informations de la prescription
+        // Mettre à jour les informations de base
         prescriptionMapper.updatePrescriptionFromDTO(prescriptionUpdateDTO, prescription);
 
-        // Sauvegarder les modifications
+        // ✅ COHÉRENT : Même logique de gestion des médicaments
+        if (prescriptionUpdateDTO.getMedicamentIds() != null) {
+            // Vider les anciens médicaments
+            prescription.getMedicaments().clear();
+
+            // Ajouter les nouveaux médicaments
+            for (Long medicamentId : prescriptionUpdateDTO.getMedicamentIds()) {
+                Medicament medicament = medicamentRepository.findById(medicamentId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Médicament non trouvé avec l'ID : " + medicamentId));
+
+                prescription.getMedicaments().add(medicament);
+                medicament.getPrescriptions().add(prescription);
+            }
+        }
+
         Prescription updatedPrescription = prescriptionRepository.save(prescription);
+        log.info("Prescription mise à jour avec succès");
 
-        log.info("Prescription mis à jour avec succès");
-
-        // Convertir et retourner la prescription mis à jour
         return prescriptionMapper.toDTO(updatedPrescription);
     }
 
@@ -202,28 +287,66 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
     // Je ne sais pas
     // De la part de Claude pour s'inspirer
+//    @Override
+//    public void ajouterMedicamentAPrescription(Long prescriptionId, MedicamentDTO medicamentDTO) {
+//        log.info("Ajout d'un médicament à la prescription avec l'ID : {}", prescriptionId);
+//
+//        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
+//
+//        // Convertir le DTO en entité
+//        Medicament medicament = medicamentMapper.toEntity(medicamentDTO);
+//
+//        // Ajouter le médicament à la prescription
+//        prescription.getMedicaments().add(medicament);
+//        medicament.getPrescriptions().add(prescription);
+//
+//        // Sauvegarder les modifications
+//        prescriptionRepository.save(prescription);
+//
+//        log.info("Médicament ajouté avec succès à la prescription");
+//    }
+
     @Override
-    public void ajouterMedicamentAPrescription(Long prescriptionId, MedicamentDTO medicamentDTO) {
+    public void ajouterMedicamentAPrescription(Long prescriptionId, Long medicamentId) { // ✅ CHANGER le paramètre
         log.info("Ajout d'un médicament à la prescription avec l'ID : {}", prescriptionId);
 
         Prescription prescription = prescriptionRepository.findById(prescriptionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
 
-        // Convertir le DTO en entité
-        Medicament medicament = medicamentMapper.toEntity(medicamentDTO);
+        // ✅ CORRECTION : Récupérer le médicament existant au lieu de le créer
+        Medicament medicament = medicamentRepository.findById(medicamentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Médicament non trouvé avec l'ID : " + medicamentId));
 
-        // Ajouter le médicament à la prescription
-        prescription.getMedicaments().add(medicament);
-        medicament.getPrescriptions().add(prescription);
+        // Vérifier que le médicament n'est pas déjà dans la prescription
+        if (!prescription.getMedicaments().contains(medicament)) {
+            prescription.getMedicaments().add(medicament);
+            medicament.getPrescriptions().add(prescription);
 
-        // Sauvegarder les modifications
-        prescriptionRepository.save(prescription);
+            prescriptionRepository.save(prescription);
+            medicamentRepository.save(medicament);
+        }
 
         log.info("Médicament ajouté avec succès à la prescription");
     }
 
     // Je ne sais pas
     // De la part de Claude pour s'inspirer
+//    @Override
+//    public void supprimerMedicamentDePrescription(Long prescriptionId, Long medicamentId) {
+//        log.info("Suppression du médicament avec l'ID : {} de la prescription avec l'ID : {}", medicamentId, prescriptionId);
+//
+//        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
+//
+//        // Trouver et supprimer le médicament de la liste
+//        prescription.getMedicaments().removeIf(medicament -> medicament.getId().equals(medicamentId));
+//
+//        // Sauvegarder les modifications
+//        prescriptionRepository.save(prescription);
+//
+//        log.info("Médicament supprimé avec succès de la prescription");
+//    }
     @Override
     public void supprimerMedicamentDePrescription(Long prescriptionId, Long medicamentId) {
         log.info("Suppression du médicament avec l'ID : {} de la prescription avec l'ID : {}", medicamentId, prescriptionId);
@@ -231,17 +354,59 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         Prescription prescription = prescriptionRepository.findById(prescriptionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
 
-        // Trouver et supprimer le médicament de la liste
-        prescription.getMedicaments().removeIf(medicament -> medicament.getId().equals(medicamentId));
+        Medicament medicament = medicamentRepository.findById(medicamentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Médicament non trouvé avec l'ID : " + medicamentId));
+
+        // ✅ CORRECTION : Supprimer la relation des deux côtés
+        prescription.getMedicaments().remove(medicament);
+        medicament.getPrescriptions().remove(prescription);
 
         // Sauvegarder les modifications
         prescriptionRepository.save(prescription);
+        medicamentRepository.save(medicament); // ✅ AJOUTER ceci
 
         log.info("Médicament supprimé avec succès de la prescription");
     }
 
     // Je ne sais pas
     // De la part de Claude pour s'inspirer
+//    @Override
+//    public PrescriptionDTO renouvelerPrescription(Long prescriptionId, int dureeJours) {
+//        log.info("Renouvellement de la prescription avec l'ID : {} pour {} jours", prescriptionId, dureeJours);
+//
+//        if (dureeJours <= 0) {
+//            throw new IllegalArgumentException("La durée de renouvellement doit être positive");
+//        }
+//
+//        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
+//
+//        // Créer une nouvelle prescription basée sur l'ancienne
+//        Prescription nouvellePrescription = new Prescription();
+//
+//        // ✅ CORRECTION : Utiliser setDate() au lieu de setDateDebut()
+//        nouvellePrescription.setDate(LocalDate.now());
+//        nouvellePrescription.setPosologie(prescription.getPosologie() + " (Renouvellement pour " + dureeJours + " jours)");
+//        nouvellePrescription.setInstructions(prescription.getInstructions());
+//        nouvellePrescription.setStatut(StatutPrescription.ACTIVE);
+//        nouvellePrescription.setConsultation(prescription.getConsultation());
+//
+//        // Copier les médicaments de l'ancienne prescription
+//        nouvellePrescription.setMedicaments(new HashSet<>(prescription.getMedicaments()));
+//
+//        // Sauvegarder la nouvelle prescription
+//        Prescription savedPrescription = prescriptionRepository.save(nouvellePrescription);
+//
+//        // Mettre à jour les relations bidirectionnelles avec les médicaments
+//        for (Medicament medicament : savedPrescription.getMedicaments()) {
+//            medicament.getPrescriptions().add(savedPrescription);
+//        }
+//
+//        log.info("Prescription renouvelée avec succès avec l'ID : {}", savedPrescription.getId());
+//
+//        return prescriptionMapper.toDTO(savedPrescription);
+//    }
+
     @Override
     public PrescriptionDTO renouvelerPrescription(Long prescriptionId, int dureeJours) {
         log.info("Renouvellement de la prescription avec l'ID : {} pour {} jours", prescriptionId, dureeJours);
@@ -253,25 +418,28 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         Prescription prescription = prescriptionRepository.findById(prescriptionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription non trouvée avec l'ID : " + prescriptionId));
 
-        // Créer une nouvelle prescription basée sur l'ancienne
+        // Créer une nouvelle prescription
         Prescription nouvellePrescription = new Prescription();
         nouvellePrescription.setDate(LocalDate.now());
+        nouvellePrescription.setPosologie(prescription.getPosologie() + " (Renouvellement pour " + dureeJours + " jours)");
         nouvellePrescription.setInstructions(prescription.getInstructions());
-        nouvellePrescription.setStatut(StatutPrescription.ACTIVE); // Définir le statut comme ACTIVE pour la nouvelle prescription
+        nouvellePrescription.setStatut(StatutPrescription.ACTIVE);
         nouvellePrescription.setConsultation(prescription.getConsultation());
 
-        // Copier les médicaments de l'ancienne prescription
-        nouvellePrescription.setMedicaments(new HashSet<>(prescription.getMedicaments()));
+        // ✅ CORRECTION : Copier les médicaments correctement
+        nouvellePrescription.setMedicaments(new HashSet<>());
 
-        // Sauvegarder la nouvelle prescription
+        // Sauvegarder d'abord la prescription
         Prescription savedPrescription = prescriptionRepository.save(nouvellePrescription);
 
-        // Mettre à jour les relations bidirectionnelles avec les médicaments si nécessaire
-        for (Medicament medicament : savedPrescription.getMedicaments()) {
+        // Puis ajouter les médicaments
+        for (Medicament medicament : prescription.getMedicaments()) {
+            savedPrescription.getMedicaments().add(medicament);
             medicament.getPrescriptions().add(savedPrescription);
         }
 
-        log.info("Prescription renouvelée avec succès avec l'ID : {}", savedPrescription.getId());
+        // Sauvegarder à nouveau
+        savedPrescription = prescriptionRepository.save(savedPrescription);
 
         return prescriptionMapper.toDTO(savedPrescription);
     }
@@ -329,3 +497,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
                 .collect(Collectors.toList());
     }
 }
+
+
+

@@ -17,6 +17,7 @@ public class ServiceDTO {
     private String nom;
     private String description;
     private BigDecimal tarif;
+    private BigDecimal cout;  // Nouveau champ ajouté
     private String categorie;
     private Boolean actif;
 

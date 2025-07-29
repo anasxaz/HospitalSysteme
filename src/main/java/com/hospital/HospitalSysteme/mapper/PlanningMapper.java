@@ -23,8 +23,8 @@ public interface PlanningMapper {
 
     @Mapping(target = "cadreAdministratifIds", expression = "java(mapCadreAdministratifsToIds(planning.getCadreAdministratifs()))")
     // Si vous avez accès au département via les cadres administratifs:
-    @Mapping(target = "departementId", expression = "java(getDepartementId(planning.getCadreAdministratifs()))")
-    @Mapping(target = "departementNom", expression = "java(getDepartementNom(planning.getCadreAdministratifs()))")
+//    @Mapping(target = "departementId", expression = "java(getDepartementId(planning.getCadreAdministratifs()))")
+//    @Mapping(target = "departementNom", expression = "java(getDepartementNom(planning.getCadreAdministratifs()))")
     PlanningDTO toDTO(Planning planning);
 
     @Mapping(target = "id", ignore = true)

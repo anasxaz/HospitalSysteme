@@ -26,5 +26,6 @@ public class FactureDTO {
     private String patientPrenom;
     private Long cadreAdministratifId;
     private String cadreAdministratifNom;
+    private String cadreAdministratifPrenom;  // ← AJOUTER CECI
 
 }

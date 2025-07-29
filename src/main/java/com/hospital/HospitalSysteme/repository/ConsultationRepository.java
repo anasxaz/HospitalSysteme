@@ -62,9 +62,78 @@ public interface ConsultationRepository extends JpaRepository<Consultation, Long
     @Query("SELECT FUNCTION('MONTH', c.date), COUNT(c) FROM Consultation c WHERE FUNCTION('YEAR', c.date) = :annee GROUP BY FUNCTION('MONTH', c.date)")
     List<Object[]> countConsultationsByMois(@Param("annee") int annee);
 
-    @Query("SELECT COUNT(c) FROM Consultation c WHERE c.medecin.id = :medecinId AND c.date BETWEEN :debut AND :fin")
-    Long countByMedecinIdAndDateBetween(@Param("medecinId") Long medecinId, @Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
+//    @Query("SELECT COUNT(c) FROM Consultation c WHERE c.medecin.id = :medecinId AND c.date BETWEEN :debut AND :fin")
+//    Long countByMedecinIdAndDateBetween(@Param("medecinId") Long medecinId, @Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
 
+    @Query("SELECT COUNT(c) FROM Consultation c " +
+            "WHERE c.medecin.departement.id = :departementId " +
+            "AND c.date BETWEEN :debut AND :fin")
+    Long countByDepartementIdAndDateBetween(@Param("departementId") Long departementId,
+                                            @Param("debut") LocalDateTime debut,
+                                            @Param("fin") LocalDateTime fin);
+//    Long countByDepartementIdAndDateBetween(Long deptId, LocalDateTime debut, LocalDateTime fin);
 
+//    @Query("SELECT COUNT(DISTINCT c.patient) FROM Consultation c " +
+//            "WHERE c.medecin.departement.id = :departementId " +
+//            "AND c.date BETWEEN :debut AND :fin")
+//    Long countDistinctPatientsByDepartementAndDateBetween(@Param("departementId") Long departementId,
+//                                                          @Param("debut") LocalDateTime debut,
+//                                                          @Param("fin") LocalDateTime fin);
+    @Query("SELECT COUNT(DISTINCT c.dossierMedical.patient) FROM Consultation c " +
+            "WHERE c.medecin.departement.id = :departementId " +
+            "AND c.date BETWEEN :debut AND :fin")
+    Long countDistinctPatientsByDepartementAndDateBetween(@Param("departementId") Long departementId,
+                                                          @Param("debut") LocalDateTime debut,
+                                                          @Param("fin") LocalDateTime fin);
+//    Long countDistinctPatientsByDepartementAndDateBetween(Long deptId, LocalDateTime debut, LocalDateTime fin);
+
+//    @Query("SELECT COUNT(DISTINCT c.patient) FROM Consultation c " +
+//            "WHERE c.medecin.id = :medecinId " +
+//            "AND c.date BETWEEN :debut AND :fin")
+//    Long countDistinctPatientsByMedecinAndDateBetween(@Param("medecinId") Long medecinId,
+//                                                      @Param("debut") LocalDateTime debut,
+//                                                      @Param("fin") LocalDateTime fin);
+    @Query("SELECT COUNT(DISTINCT c.dossierMedical.patient) FROM Consultation c " +
+            "WHERE c.medecin.id = :medecinId " +
+            "AND c.date BETWEEN :debut AND :fin")
+    Long countDistinctPatientsByMedecinAndDateBetween(@Param("medecinId") Long medecinId,
+                                                      @Param("debut") LocalDateTime debut,
+                                                      @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT COUNT(c) FROM Consultation c " +
+            "WHERE c.medecin.id = :medecinId " +
+            "AND c.date BETWEEN :debut AND :fin")
+    Long countByMedecinIdAndDateBetween(@Param("medecinId") Long medecinId,
+                                        @Param("debut") LocalDateTime debut,
+                                        @Param("fin") LocalDateTime fin);
+
+    // Si vous avez un champ statut dans Consultation :
+//    @Query("SELECT COUNT(c) FROM Consultation c " +
+//            "WHERE c.medecin.id = :medecinId " +
+//            "AND c.statut = :statut " +
+//            "AND c.date BETWEEN :debut AND :fin")
+//    Long countByMedecinIdAndStatutAndDateBetween(@Param("medecinId") Long medecinId,
+//                                                 @Param("statut") String statut,
+//                                                 @Param("debut") LocalDateTime debut,
+//                                                 @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT MONTH(c.date), COUNT(c) FROM Consultation c " +
+            "WHERE c.date BETWEEN :debut AND :fin " +
+            "GROUP BY MONTH(c.date)")
+    List<Object[]> countConsultationsByMoisForPeriod(@Param("debut") LocalDateTime debut,
+                                                     @Param("fin") LocalDateTime fin);
+
+
+    // Consultations par mois pour un département spécifique
+    @Query("SELECT FUNCTION('MONTH', c.date), COUNT(c) FROM Consultation c " +
+            "WHERE c.medecin.departement.id = :deptId AND FUNCTION('YEAR', c.date) = :annee " +
+            "GROUP BY FUNCTION('MONTH', c.date)")
+    List<Object[]> countConsultationsByMoisAndDepartement(@Param("deptId") Long deptId, @Param("annee") int annee);
+
+    // Consultations par semaine (dernières 4 semaines)
+    @Query("SELECT FUNCTION('WEEK', c.date), COUNT(c) FROM Consultation c " +
+            "WHERE c.date >= :dateDebut " +
+            "GROUP BY FUNCTION('WEEK', c.date)")
+    List<Object[]> countConsultationsByWeek(@Param("dateDebut") LocalDateTime dateDebut);
 }

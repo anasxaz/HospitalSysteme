@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Map;
 
 @Getter
@@ -26,5 +27,18 @@ public class DashboardStatsDTO {
     private Map<String, Long> rendezVousParStatut;
     private Map<String, Long> patientsParGroupeSanguin;
     private Map<String, Long> consultationsParMois;
+
+    // NOUVEAUX CHAMPS SUGGÉRÉS POUR LE FILTRAGE TEMPOREL
+    private LocalDate dateDebut;
+    private LocalDate dateFin;
+    private String typePeriode; // "JOUR", "MOIS", "ANNEE", "PERIODE_PERSONNALISEE"
+    private Integer annee;
+    private Integer mois;
+    private Long nouveauxPatients; // Nouveaux patients sur la période
+    private Map<String, Long> consultationsParSemaine;
+    private Map<String, BigDecimal> revenusParService;
+    private Double croissanceRendezVous; // % de croissance vs période précédente
+    private Double croissanceRevenus; // % de croissance vs période précédente
+    private Double moyenneConsultationsParJour;
 
 }

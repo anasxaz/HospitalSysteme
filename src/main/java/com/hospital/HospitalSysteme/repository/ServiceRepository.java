@@ -28,4 +28,11 @@ public interface ServiceRepository extends JpaRepository<ServiceHospitalier, Lon
     @Query("SELECT s FROM ServiceHospitalier s ORDER BY s.tarif DESC")
     List<ServiceHospitalier> findAllOrderByTarifDesc();
 
+    /**
+     * Récupère toutes les catégories distinctes qui existent réellement dans la table services
+     * @return Liste des catégories uniques présentes en base de données
+     */
+    @Query("SELECT DISTINCT s.categorie FROM ServiceHospitalier s WHERE s.categorie IS NOT NULL ORDER BY s.categorie")
+    List<String> findDistinctCategories();
+
 }

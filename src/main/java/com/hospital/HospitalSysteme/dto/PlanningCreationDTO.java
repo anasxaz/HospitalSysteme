@@ -30,8 +30,8 @@ public class PlanningCreationDTO {
 
     // On peut conserver ce champ si on souhaite associer automatiquement
     // tous les cadres administratifs d'un département au planning
-    @NotNull(message = "L'ID du département est obligatoire")
-    private Long departementId;
+//    @NotNull(message = "L'ID du département est obligatoire")
+//    private Long departementId;
 
     // Ou vous pouvez ajouter ce champ pour spécifier explicitement
     // quels cadres administratifs sont associés au planning

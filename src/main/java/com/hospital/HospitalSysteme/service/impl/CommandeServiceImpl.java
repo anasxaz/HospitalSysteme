@@ -3,6 +3,7 @@ package com.hospital.HospitalSysteme.service.impl;
 import com.hospital.HospitalSysteme.dto.CommandeCreationDTO;
 import com.hospital.HospitalSysteme.dto.CommandeDTO;
 import com.hospital.HospitalSysteme.dto.CommandeUpdateDTO;
+import com.hospital.HospitalSysteme.entity.CadreAdministratif;
 import com.hospital.HospitalSysteme.entity.Commande;
 import com.hospital.HospitalSysteme.entity.Notification;
 import com.hospital.HospitalSysteme.entity.PlanDeSoins;
@@ -45,37 +46,90 @@ public class CommandeServiceImpl implements CommandeService {
 
 
 
+//    @Override
+//    public CommandeDTO createCommande(CommandeCreationDTO commandeCreationDTO) {
+//        log.info("Création d'une nouvelle commande le : {}", commandeCreationDTO.getDateCommande());
+//        // ✅ Générer automatiquement la date de commande
+//        Commande commande = commandeMapper.toEntity(commandeCreationDTO);
+//        commande.setDateCommande(LocalDateTime.now()); // ← AUTO-GÉNÉRÉE
+//
+//        // Vérifier si la date de livraison est spécifiée et si elle est valide
+//        if (commandeCreationDTO.getDateLivraison() != null &&
+//                commandeCreationDTO.getDateLivraison().isBefore(commandeCreationDTO.getDateCommande())) {
+//            throw new IllegalArgumentException("La date de livraison ne peut pas être antérieure à la date de la commande");
+//        }
+//
+//        // Vérifier que le cadre administratif existe
+//        if (!cadreAdministratifRepository.existsById(commandeCreationDTO.getCadreAdministratifId())) {
+//            throw new ResourceNotFoundException("Cadre administratif non trouvé avec l'ID : " + commandeCreationDTO.getCadreAdministratifId());
+//        }
+//
+//        // Convert commandeCreationDTO to commande JPA Entity
+//        Commande commande = commandeMapper.toEntity(commandeCreationDTO);
+//
+//        // Définir le statut par défaut si non spécifié
+//        if (commande.getStatut() == null) {
+//            commande.setStatut(StatutCommande.EN_ATTENTE);
+//        }
+//
+//        // plan de soins JPA Entity
+//        Commande savedCommande = commandeRepository.save(commande);
+//
+//        log.info("Commande créée avec succès avec l'ID : {}", savedCommande.getId());
+//
+//        // Convert savedPlanDeSoins JPA Entity into DTO object
+//        return commandeMapper.toDTO(savedCommande);
+//    }
+
+    // 2ème tentative :
+//    @Override
+//    public CommandeDTO createCommande(CommandeCreationDTO commandeCreationDTO) {
+//        log.info("Création d'une nouvelle commande : {}", commandeCreationDTO.getReference());
+//
+//        // ✅ Générer automatiquement la date de commande
+//        Commande commande = commandeMapper.toEntity(commandeCreationDTO);
+//        commande.setDateCommande(LocalDateTime.now()); // ← AUTO-GÉNÉRÉE
+//
+//        // Vérifier le cadre administratif
+//        if (!cadreAdministratifRepository.existsById(commandeCreationDTO.getCadreAdministratifId())) {
+//            throw new ResourceNotFoundException("Cadre administratif non trouvé avec l'ID : " + commandeCreationDTO.getCadreAdministratifId());
+//        }
+//
+//        // Statut par défaut
+//        if (commande.getStatut() == null) {
+//            commande.setStatut(StatutCommande.EN_ATTENTE);
+//        }
+//
+//        Commande savedCommande = commandeRepository.save(commande);
+//        return commandeMapper.toDTO(savedCommande);
+//    }
+
     @Override
     public CommandeDTO createCommande(CommandeCreationDTO commandeCreationDTO) {
-        log.info("Création d'une nouvelle commande le : {}", commandeCreationDTO.getDateCommande());
+        log.info("Création d'une nouvelle commande : {}", commandeCreationDTO.getReference());
 
-        // Vérifier si la date de livraison est spécifiée et si elle est valide
-        if (commandeCreationDTO.getDateLivraison() != null &&
-                commandeCreationDTO.getDateLivraison().isBefore(commandeCreationDTO.getDateCommande())) {
-            throw new IllegalArgumentException("La date de livraison ne peut pas être antérieure à la date de la commande");
-        }
+        // ✅ Récupérer le cadre administratif complet
+        CadreAdministratif cadreAdministratif = cadreAdministratifRepository.findById(commandeCreationDTO.getCadreAdministratifId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cadre administratif non trouvé avec l'ID : " + commandeCreationDTO.getCadreAdministratifId()));
 
-        // Vérifier que le cadre administratif existe
-        if (!cadreAdministratifRepository.existsById(commandeCreationDTO.getCadreAdministratifId())) {
-            throw new ResourceNotFoundException("Cadre administratif non trouvé avec l'ID : " + commandeCreationDTO.getCadreAdministratifId());
-        }
-
-        // Convert commandeCreationDTO to commande JPA Entity
+        // Convert DTO to Entity
         Commande commande = commandeMapper.toEntity(commandeCreationDTO);
 
-        // Définir le statut par défaut si non spécifié
+        // ✅ Assigner l'entité complète
+        commande.setCadreAdministratif(cadreAdministratif);
+
+        // ✅ Auto-générer la date de commande
+        commande.setDateCommande(LocalDateTime.now());
+
+        // Statut par défaut
         if (commande.getStatut() == null) {
             commande.setStatut(StatutCommande.EN_ATTENTE);
         }
 
-        // plan de soins JPA Entity
         Commande savedCommande = commandeRepository.save(commande);
-
-        log.info("Commande créée avec succès avec l'ID : {}", savedCommande.getId());
-
-        // Convert savedPlanDeSoins JPA Entity into DTO object
         return commandeMapper.toDTO(savedCommande);
     }
+
 
     @Override
     public CommandeDTO getCommandeById(Long commandeId) {
@@ -205,26 +259,45 @@ public class CommandeServiceImpl implements CommandeService {
         return commandeMapper.toDTO(updatedCommande);
     }
 
-    @Override
-    public CommandeDTO enregistrerLivraison(Long commandeId, LocalDateTime dateLivraison) {
-        log.info("Enregistrement de la date de la livraison pour la commande d'ID : {} dans la date : {}", commandeId, dateLivraison);
+//    @Override
+//    public CommandeDTO enregistrerLivraison(Long commandeId, LocalDateTime dateLivraison) {
+//        log.info("Enregistrement de la date de la livraison pour la commande d'ID : {} dans la date : {}", commandeId, dateLivraison);
+//
+//        // Récupérer la commande en vérifiant son existance
+//        Commande commande = commandeRepository.findById(commandeId).orElseThrow(
+//                () -> new ResourceNotFoundException("Commande non trouvée avec l'ID : " + commandeId)
+//        );
+//
+//        // ajouter la date de livraison
+//        commande.setDateLivraison(dateLivraison);
+//        // modifier le statut vers LIVREE
+//        commande.setStatut(StatutCommande.LIVREE);
+//
+//        // sauvegarder les modifications
+//        Commande savedCommande = commandeRepository.save(commande);
+//
+//        // Convert to DTO
+//        return commandeMapper.toDTO(savedCommande);
+//    }
 
-        // Récupérer la commande en vérifiant son existance
+
+    @Override
+    public CommandeDTO enregistrerLivraison(Long commandeId) {  // ← SUPPRIMER le paramètre date
+        log.info("Enregistrement de la livraison pour la commande d'ID : {}", commandeId);
+
+        // Récupérer la commande
         Commande commande = commandeRepository.findById(commandeId).orElseThrow(
                 () -> new ResourceNotFoundException("Commande non trouvée avec l'ID : " + commandeId)
         );
 
-        // ajouter la date de livraison
-        commande.setDateLivraison(dateLivraison);
-        // modifier le statut vers LIVREE
+        // ✅ DATE AUTOMATIQUE = MAINTENANT
+        commande.setDateLivraison(LocalDateTime.now());
         commande.setStatut(StatutCommande.LIVREE);
 
-        // sauvegarder les modifications
         Commande savedCommande = commandeRepository.save(commande);
-
-        // Convert to DTO
         return commandeMapper.toDTO(savedCommande);
     }
+
 
     @Override
     public CommandeDTO annulerCommande(Long commandeId) {

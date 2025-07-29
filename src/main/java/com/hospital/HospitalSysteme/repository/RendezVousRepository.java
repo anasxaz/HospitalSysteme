@@ -51,7 +51,7 @@ public interface RendezVousRepository extends JpaRepository<RendezVous, Long> {
     @Query("SELECT r FROM RendezVous r WHERE DATE(r.dateHeure) = :date")
     List<RendezVous> findByDate(@Param("date") LocalDate date);
 
-    int countByMedecinDepartementId(Long departementId);
+//    int countByMedecinDepartementId(Long departementId);
 
     int countByMedecinIdAndStatut(Long medecinId, StatutRendezVous statut);
     int countByPatientIdAndStatut(Long patientId, StatutRendezVous statut);
@@ -94,5 +94,29 @@ public interface RendezVousRepository extends JpaRepository<RendezVous, Long> {
 //public List<RendezVous> findByMedecinIdAndDate(@Param("medecinId") Long medecinId, @Param("date") LocalDate date);
 
 
+    @Query("SELECT r.statut, COUNT(r) FROM RendezVous r " +
+            "WHERE r.dateHeure BETWEEN :debut AND :fin " +
+            "GROUP BY r.statut")
+    default List<Object[]> countRendezVousByStatutAndDateBetween(@Param("debut") LocalDateTime debut,
+                                                                 @Param("fin") LocalDateTime fin) {
+        return countRendezVousByStatut(); // Fallback vers méthode existante
+    }
+
+    @Query("SELECT COUNT(r) FROM RendezVous r " +
+            "WHERE r.medecin.departement.id = :departementId " +
+            "AND r.dateHeure BETWEEN :debut AND :fin")
+    Long countByMedecinDepartementIdAndDateHeureBetween(@Param("departementId") Long departementId,
+                                                        @Param("debut") LocalDateTime debut,
+                                                        @Param("fin") LocalDateTime fin);
+
+    // Rendez-vous par statut pour un département
+    @Query("SELECT r.statut, COUNT(r) FROM RendezVous r " +
+            "WHERE r.medecin.departement.id = :deptId " +
+            "GROUP BY r.statut")
+    List<Object[]> countRendezVousByStatutAndDepartement(@Param("deptId") Long deptId);
+
+    // Dans RendezVousRepository.java, ajoute :
+    @Query("SELECT COUNT(r) FROM RendezVous r WHERE r.medecin.departement.id = :departementId")
+    Long countByMedecinDepartementId(@Param("departementId") Long departementId);
 
 }

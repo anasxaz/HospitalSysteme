@@ -2,6 +2,7 @@ package com.hospital.HospitalSysteme.service;
 
 import com.hospital.HospitalSysteme.dto.*;
 import com.hospital.HospitalSysteme.entity.enums.StatutPaiement;
+import com.hospital.HospitalSysteme.entity.enums.StatutRendezVous;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +16,8 @@ public interface CadreAdministratifService {
 
     // Gestion des rendez-vous
     RendezVousDTO createRendezVous(RendezVousCreationDTO rendezVousCreationDTO);
-    void updateRendezVousStatut(Long rendezVousId, String statut);
+//    void updateRendezVousStatut(Long rendezVousId, String statut);
+    void updateRendezVousStatut(Long rendezVousId, StatutRendezVous statut);
     List<RendezVousDTO> getRendezVousByDate(LocalDate date);
 
     // Gestion des factures

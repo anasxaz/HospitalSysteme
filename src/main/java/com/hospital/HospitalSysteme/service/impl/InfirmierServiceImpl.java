@@ -4,9 +4,11 @@ import com.hospital.HospitalSysteme.dto.InfirmierCreationDTO;
 import com.hospital.HospitalSysteme.dto.InfirmierDTO;
 import com.hospital.HospitalSysteme.dto.PatientDTO;
 import com.hospital.HospitalSysteme.dto.PlanDeSoinsDTO;
+import com.hospital.HospitalSysteme.entity.Departement;
 import com.hospital.HospitalSysteme.entity.Infirmier;
 import com.hospital.HospitalSysteme.entity.Patient;
 import com.hospital.HospitalSysteme.entity.PlanDeSoins;
+import com.hospital.HospitalSysteme.entity.enums.ProfilUser;
 import com.hospital.HospitalSysteme.exception.ResourceNotFoundException;
 import com.hospital.HospitalSysteme.mapper.*;
 import com.hospital.HospitalSysteme.repository.*;
@@ -33,6 +35,7 @@ public class InfirmierServiceImpl implements InfirmierService {
     private PlanDeSoinsRepository planDeSoinsRepository;
     private FactureRepository factureRepository;
     private InfirmierRepository infirmierRepository;
+    private DepartementRepository departementRepository;
 //
     private PatientMapper patientMapper;
     private DossierMedicalMapper dossierMedicalMapper;
@@ -59,6 +62,27 @@ public class InfirmierServiceImpl implements InfirmierService {
 
         // Convert infirmierCreationDTO to infirmier JPA Entity
         Infirmier infirmier = infirmierMapper.toEntity(infirmierCreationDTO);
+
+        // Définir un profil par défaut si non fourni
+        infirmier.setProfil(ProfilUser.PERSONNEL);
+
+        // AJOUTEZ CETTE LIGNE pour la date d'embauche
+        infirmier.setDateEmbauche(LocalDate.now());
+        // AJOUTEZ CETTE LIGNE pour le poste
+        infirmier.setPoste("Infirmier");
+
+        // Valeur saisie par l'utilisateur
+        infirmier.setSalaire(infirmierCreationDTO.getSalaire());
+
+        // AJOUTEZ CETTE LIGNE pour le numeroOrdre
+        infirmier.setNumeroOrdre(infirmierCreationDTO.getNumeroOrdre());
+
+        // Récupérer le département et l'assigner
+        Departement departement = departementRepository.findById(infirmierCreationDTO.getDepartementId())
+                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + infirmierCreationDTO.getDepartementId()));
+        infirmier.setDepartement(departement);
+
+
 
         // infirmier JPA Entity
         Infirmier savedInfirmier = infirmierRepository.save(infirmier);
@@ -202,10 +226,14 @@ public class InfirmierServiceImpl implements InfirmierService {
     public List<InfirmierDTO> getInfirmiersByNiveauQualification(String niveauQualification) {
         log.info("Récupération des infirmiers avec le niveau de qualification : {}", niveauQualification);
 
-        List<Infirmier> infirmiers = infirmierRepository.findByNiveauQualification(niveauQualification);
+//        List<Infirmier> infirmiers = infirmierRepository.findByNiveauQualification(niveauQualification);
+        // Utilisez la recherche partielle au lieu de l'exacte
+        List<Infirmier> infirmiers = infirmierRepository.findByNiveauQualificationContainingIgnoreCase(niveauQualification);
+
 
         return infirmiers.stream()
                 .map(infirmierMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
 }

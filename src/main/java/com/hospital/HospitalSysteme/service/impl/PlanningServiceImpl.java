@@ -22,7 +22,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -49,6 +51,64 @@ public class PlanningServiceImpl implements PlanningService {
 
 
 
+//    @Override
+//    public PlanningDTO createPlanning(PlanningCreationDTO planningCreationDTO) {
+//        log.info("Création d'un nouveau planning le : {}", planningCreationDTO.getDateDebut());
+//
+//        // Vérifier si la date de début est avant la date de fin ou pas
+//        if (planningCreationDTO.getDateFin().isBefore(planningCreationDTO.getDateDebut())) {
+//            throw new IllegalArgumentException("La date de fin ne peut pas être antérieure à la date de début");
+//        }
+//
+//        // Convert planningCreationDTO to planning JPA Entity
+//        Planning planning = planningMapper.toEntity(planningCreationDTO);
+//
+//        // Définir le statut par défaut si non spécifié
+//        if (planning.getStatut() == null) {
+//            planning.setStatut(StatutPlanning.BROUILLON);
+//        }
+//
+//        // planning JPA Entity
+//        Planning savedPlanning = planningRepository.save(planning);
+//
+//        log.info("Planning crée avec succès avec l'ID : {}", savedPlanning.getId());
+//
+//        // Convert savedPlanning JPA Entity into DTO object
+//        return planningMapper.toDTO(savedPlanning);
+//    }
+
+    //2ème tentative :
+//    @Override
+//    public PlanningDTO createPlanning(PlanningCreationDTO planningCreationDTO) {
+//        log.info("Création d'un nouveau planning le : {}", planningCreationDTO.getDateDebut());
+//
+//        // Validation des dates
+//        if (planningCreationDTO.getDateFin().isBefore(planningCreationDTO.getDateDebut())) {
+//            throw new IllegalArgumentException("La date de fin ne peut pas être antérieure à la date de début");
+//        }
+//
+//        Planning planning = planningMapper.toEntity(planningCreationDTO);
+//
+//        // AJOUTEZ : Récupérer et assigner les cadres administratifs
+//        Set<CadreAdministratif> cadres = new HashSet<>();
+//        for (Long cadreId : planningCreationDTO.getCadreAdministratifIds()) {
+//            CadreAdministratif cadre = cadreAdministratifRepository.findById(cadreId)
+//                    .orElseThrow(() -> new ResourceNotFoundException("Cadre administratif non trouvé avec l'ID : " + cadreId));
+//            cadres.add(cadre);
+//        }
+//        planning.setCadreAdministratifs(cadres);
+//
+//        // Statut par défaut
+//        if (planning.getStatut() == null) {
+//            planning.setStatut(StatutPlanning.BROUILLON);
+//        }
+//
+//        Planning savedPlanning = planningRepository.save(planning);
+//        log.info("Planning créé avec succès avec l'ID : {}", savedPlanning.getId());
+//
+//        return planningMapper.toDTO(savedPlanning);
+//    }
+
     @Override
     public PlanningDTO createPlanning(PlanningCreationDTO planningCreationDTO) {
         log.info("Création d'un nouveau planning le : {}", planningCreationDTO.getDateDebut());
@@ -61,15 +121,33 @@ public class PlanningServiceImpl implements PlanningService {
         // Convert planningCreationDTO to planning JPA Entity
         Planning planning = planningMapper.toEntity(planningCreationDTO);
 
+        // AJOUT : Récupérer et assigner les cadres administratifs
+        Set<CadreAdministratif> cadres = new HashSet<>();
+
+        if (planningCreationDTO.getCadreAdministratifIds() != null && !planningCreationDTO.getCadreAdministratifIds().isEmpty()) {
+            for (Long cadreId : planningCreationDTO.getCadreAdministratifIds()) {
+                CadreAdministratif cadre = cadreAdministratifRepository.findById(cadreId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Cadre administratif non trouvé avec l'ID : " + cadreId));
+                cadres.add(cadre);
+                log.info("Cadre administratif ajouté au planning : {}", cadre.getNom());
+            }
+            planning.setCadreAdministratifs(cadres);
+        } else {
+            throw new IllegalArgumentException("Au moins un cadre administratif doit être assigné au planning");
+        }
+
         // Définir le statut par défaut si non spécifié
         if (planning.getStatut() == null) {
             planning.setStatut(StatutPlanning.BROUILLON);
         }
 
-        // planning JPA Entity
+        // Vérifier les chevauchements AVANT de sauvegarder
+        checkForOverlaps(planning.getDateDebut(), planning.getDateFin(), null);
+
+        // Sauvegarder le planning JPA Entity
         Planning savedPlanning = planningRepository.save(planning);
 
-        log.info("Planning crée avec succès avec l'ID : {}", savedPlanning.getId());
+        log.info("Planning créé avec succès avec l'ID : {}", savedPlanning.getId());
 
         // Convert savedPlanning JPA Entity into DTO object
         return planningMapper.toDTO(savedPlanning);
@@ -162,6 +240,35 @@ public class PlanningServiceImpl implements PlanningService {
                 .collect(Collectors.toList());
     }
 
+//    @Override
+//    public PlanningDTO updatePlanning(Long id, PlanningUpdateDTO planningUpdateDTO) {
+//        log.info("Mise à jour du planning avec l'ID : {}", id);
+//
+//        // Récupérer le planning existant
+//        Planning planning = planningRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Planning non trouvé avec l'ID : " + id));
+//
+//        // Vérifier si les dates sont valides si elles sont modifiées
+//        if (planningUpdateDTO.getDateDebut() != null && planningUpdateDTO.getDateFin() != null) {
+//            if (planningUpdateDTO.getDateFin().isBefore(planningUpdateDTO.getDateDebut())) {
+//                throw new IllegalArgumentException("La date de fin ne peut pas être antérieure à la date de début");
+//            }
+//
+//            // Vérifier les chevauchements
+//            checkForOverlaps(planningUpdateDTO.getDateDebut(), planningUpdateDTO.getDateFin(), id);
+//        }
+//
+//        // Mettre à jour les champs du planning
+//        planningMapper.updateEntityFromDTO(planningUpdateDTO, planning);
+//
+//        // Sauvegarder les modifications
+//        Planning updatedPlanning = planningRepository.save(planning);
+//        log.info("Planning mis à jour avec succès");
+//
+//        return planningMapper.toDTO(updatedPlanning);
+//    }
+
+
     @Override
     public PlanningDTO updatePlanning(Long id, PlanningUpdateDTO planningUpdateDTO) {
         log.info("Mise à jour du planning avec l'ID : {}", id);
@@ -180,7 +287,18 @@ public class PlanningServiceImpl implements PlanningService {
             checkForOverlaps(planningUpdateDTO.getDateDebut(), planningUpdateDTO.getDateFin(), id);
         }
 
-        // Mettre à jour les champs du planning
+        // AJOUTEZ CETTE PARTIE - Mettre à jour les cadres administratifs
+        if (planningUpdateDTO.getCadreAdministratifIds() != null) {
+            Set<CadreAdministratif> nouveauxCadres = new HashSet<>();
+            for (Long cadreId : planningUpdateDTO.getCadreAdministratifIds()) {
+                CadreAdministratif cadre = cadreAdministratifRepository.findById(cadreId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Cadre administratif non trouvé avec l'ID : " + cadreId));
+                nouveauxCadres.add(cadre);
+            }
+            planning.setCadreAdministratifs(nouveauxCadres);
+        }
+
+        // Mettre à jour les autres champs du planning
         planningMapper.updateEntityFromDTO(planningUpdateDTO, planning);
 
         // Sauvegarder les modifications
@@ -189,6 +307,8 @@ public class PlanningServiceImpl implements PlanningService {
 
         return planningMapper.toDTO(updatedPlanning);
     }
+
+
 
     @Override
     public void deletePlanning(Long id) {

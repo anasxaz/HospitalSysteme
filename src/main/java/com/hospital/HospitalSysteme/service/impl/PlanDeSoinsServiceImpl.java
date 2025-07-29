@@ -3,6 +3,8 @@ package com.hospital.HospitalSysteme.service.impl;
 import com.hospital.HospitalSysteme.dto.PlanDeSoinsCreationDTO;
 import com.hospital.HospitalSysteme.dto.PlanDeSoinsDTO;
 import com.hospital.HospitalSysteme.dto.PlanDeSoinsUpdateDTO;
+import com.hospital.HospitalSysteme.entity.Infirmier;
+import com.hospital.HospitalSysteme.entity.Patient;
 import com.hospital.HospitalSysteme.entity.PlanDeSoins;
 import com.hospital.HospitalSysteme.entity.Prescription;
 import com.hospital.HospitalSysteme.entity.enums.StatutPlanDeSoins;
@@ -43,8 +45,19 @@ public class PlanDeSoinsServiceImpl implements PlanDeSoinsService {
             throw new IllegalArgumentException("La date de fin ne peut pas être antérieure à la date de début");
         }
 
+        // ✅ AJOUT : Récupérer les entités complètes
+        Patient patient = patientRepository.findById(planDeSoinsCreationDTO.getPatientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient non trouvé avec l'ID : " + planDeSoinsCreationDTO.getPatientId()));
+
+        Infirmier infirmier = infirmierRepository.findById(planDeSoinsCreationDTO.getInfirmierId())
+                .orElseThrow(() -> new ResourceNotFoundException("Infirmier non trouvé avec l'ID : " + planDeSoinsCreationDTO.getInfirmierId()));
+
         // Convert planDeSoinsCreationDTO to plan de soins JPA Entity
         PlanDeSoins planDeSoins = planDeSoinsMapper.toEntity(planDeSoinsCreationDTO);
+
+        // ✅ AJOUT : Assigner les entités complètes
+        planDeSoins.setPatient(patient);
+        planDeSoins.setInfirmier(infirmier);
 
         // plan de soins JPA Entity
         PlanDeSoins savedPlanDeSoins = planDeSoinsRepository.save(planDeSoins);

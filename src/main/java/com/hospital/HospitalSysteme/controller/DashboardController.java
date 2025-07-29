@@ -16,7 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -224,20 +227,70 @@ public class DashboardController {
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN')")
     public ResponseEntity<Map<String, Object>> getRealTimeStats() {
-        log.info("Demande de récupération des statistiques en temps réel");
+        LocalDate today = LocalDate.now();
+        DashboardStatsDTO todayStats = dashboardService.getStatsByDate(today);
 
-        DashboardStatsDTO todayStats = dashboardService.getStatsByPeriod(LocalDate.now(), LocalDate.now());
+        // Calculer aussi les stats de la semaine en cours
+        LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() - 1);
+        DashboardStatsDTO weekStats = dashboardService.getStatsByPeriod(startOfWeek, today);
 
-        Map<String, Object> realTimeStats = Map.of(
-                "rendezVousAujourdhui", todayStats.getRendezVousAujourdhui() != null ? todayStats.getRendezVousAujourdhui() : 0L,
-                "consultationsAujourdhui", todayStats.getConsultationsAujourdhui() != null ? todayStats.getConsultationsAujourdhui() : 0L,
-                "revenusJournaliers", todayStats.getRevenusJournaliers() != null ? todayStats.getRevenusJournaliers() : 0,
-                "timestamp", java.time.LocalDateTime.now(),
-                "statut", "ACTIF"
-        );
+        // Calculer les stats du mois en cours
+        LocalDate startOfMonth = today.withDayOfMonth(1);
+        DashboardStatsDTO monthStats = dashboardService.getStatsByPeriod(startOfMonth, today);
+
+        Map<String, Object> realTimeStats = new HashMap<>();
+
+        // Stats du jour
+        realTimeStats.put("aujourd", Map.of(
+                "date", today,
+                "rendezVous", todayStats.getRendezVousAujourdhui() != null ? todayStats.getRendezVousAujourdhui() : 0L,
+                "consultations", todayStats.getConsultationsAujourdhui() != null ? todayStats.getConsultationsAujourdhui() : 0L,
+                "revenus", todayStats.getRevenusJournaliers() != null ? todayStats.getRevenusJournaliers() : BigDecimal.ZERO
+        ));
+
+        // Stats de la semaine
+        realTimeStats.put("semaineEnCours", Map.of(
+                "debut", startOfWeek,
+                "fin", today,
+                "rendezVous", weekStats.getTotalRendezVous() != null ? weekStats.getTotalRendezVous() : 0L,
+                "consultations", weekStats.getConsultationsAujourdhui() != null ? weekStats.getConsultationsAujourdhui() : 0L,
+                "revenus", weekStats.getRevenusJournaliers() != null ? weekStats.getRevenusJournaliers() : BigDecimal.ZERO
+        ));
+
+        // Stats du mois
+        realTimeStats.put("moisEnCours", Map.of(
+                "mois", today.getMonth().toString() + " " + today.getYear(),
+                "debut", startOfMonth,
+                "fin", today,
+                "rendezVous", monthStats.getTotalRendezVous() != null ? monthStats.getTotalRendezVous() : 0L,
+                "consultations", monthStats.getConsultationsAujourdhui() != null ? monthStats.getConsultationsAujourdhui() : 0L,
+                "revenus", monthStats.getRevenusJournaliers() != null ? monthStats.getRevenusJournaliers() : BigDecimal.ZERO
+        ));
+
+        // Métadonnées
+        realTimeStats.put("timestamp", LocalDateTime.now());
+        realTimeStats.put("statut", "ACTIF");
+        realTimeStats.put("fuseau", "Europe/Paris");
 
         return ResponseEntity.ok(realTimeStats);
     }
+
+    //    public ResponseEntity<Map<String, Object>> getRealTimeStats() {
+//        log.info("Demande de récupération des statistiques en temps réel");
+//
+//        DashboardStatsDTO todayStats = dashboardService.getStatsByPeriod(LocalDate.now(), LocalDate.now());
+//
+//        Map<String, Object> realTimeStats = Map.of(
+//                "rendezVousAujourdhui", todayStats.getRendezVousAujourdhui() != null ? todayStats.getRendezVousAujourdhui() : 0L,
+//                "consultationsAujourdhui", todayStats.getConsultationsAujourdhui() != null ? todayStats.getConsultationsAujourdhui() : 0L,
+//                "revenusJournaliers", todayStats.getRevenusJournaliers() != null ? todayStats.getRevenusJournaliers() : 0,
+//                "timestamp", java.time.LocalDateTime.now(),
+//                "statut", "ACTIF"
+//        );
+//
+//        return ResponseEntity.ok(realTimeStats);
+//    }
+
 
     // ====================== STATISTIQUES COMPARATIVES ======================
 

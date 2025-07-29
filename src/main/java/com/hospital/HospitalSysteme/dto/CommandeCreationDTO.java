@@ -21,8 +21,8 @@ public class CommandeCreationDTO {
     @NotBlank(message = "La référence est obligatoire")
     private String reference;
 
-    @NotNull(message = "La date de commande est obligatoire")
-    private LocalDateTime dateCommande;
+//    @NotNull(message = "La date de commande est obligatoire")
+//    private LocalDateTime dateCommande;
 
     private LocalDateTime dateLivraison;
 
@@ -34,6 +34,9 @@ public class CommandeCreationDTO {
 
     @NotBlank(message = "Le fournisseur est obligatoire")
     private String fournisseur;
+
+    @NotBlank(message = "La description est obligatoire")  // ← AJOUTER
+    private String description;
 
     @NotNull(message = "L'ID du cadre administratif est obligatoire")
     private Long cadreAdministratifId;

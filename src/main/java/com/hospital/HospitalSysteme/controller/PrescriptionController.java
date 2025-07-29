@@ -47,12 +47,22 @@ public class PrescriptionController {
     @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<PrescriptionDTO> createPrescription(
             @Parameter(description = "Informations de la prescription à créer") @Valid @RequestBody PrescriptionCreationDTO prescriptionCreationDTO) {
-        log.info("Demande de création d'une prescription pour la consultation ID: {} avec le médicament ID: {}",
-                prescriptionCreationDTO.getConsultationId(), prescriptionCreationDTO.getMedicamentId());
+
+        // ✅ CORRECTION : Changer getMedicamentId() en getMedicamentIds()
+        log.info("Demande de création d'une prescription pour la consultation ID: {} avec les médicaments IDs: {}",
+                prescriptionCreationDTO.getConsultationId(), prescriptionCreationDTO.getMedicamentIds());
 
         PrescriptionDTO createdPrescription = prescriptionService.createPrescription(prescriptionCreationDTO);
         return new ResponseEntity<>(createdPrescription, HttpStatus.CREATED);
     }
+//    public ResponseEntity<PrescriptionDTO> createPrescription(
+//            @Parameter(description = "Informations de la prescription à créer") @Valid @RequestBody PrescriptionCreationDTO prescriptionCreationDTO) {
+//        log.info("Demande de création d'une prescription pour la consultation ID: {} avec le médicament ID: {}",
+//                prescriptionCreationDTO.getConsultationId(), prescriptionCreationDTO.getMedicamentId());
+//
+//        PrescriptionDTO createdPrescription = prescriptionService.createPrescription(prescriptionCreationDTO);
+//        return new ResponseEntity<>(createdPrescription, HttpStatus.CREATED);
+//    }
 
     @GetMapping("/{id}")
     @Operation(summary = "Récupérer une prescription par ID", description = "Récupère les informations d'une prescription médicale par son ID")
@@ -88,7 +98,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "200", description = "Prescription mise à jour"),
             @ApiResponse(responseCode = "404", description = "Prescription non trouvée")
     })
-    @PreAuthorize("hasRole('MEDECIN', 'PERSONNEL')")
+    @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<PrescriptionDTO> updatePrescription(
             @Parameter(description = "ID de la prescription") @PathVariable Long id,
             @Parameter(description = "Informations à mettre à jour") @Valid @RequestBody PrescriptionUpdateDTO prescriptionUpdateDTO) {
@@ -177,7 +187,7 @@ public class PrescriptionController {
         return ResponseEntity.ok(prescriptions);
     }
 
-    @PostMapping("/{id}/medicaments")
+    @PostMapping("/{id}/medicaments/{medicamentId}")
     @Operation(summary = "Ajouter un médicament à une prescription",
             description = "Ajoute un médicament à une prescription médicale existante")
     @ApiResponses(value = {
@@ -187,12 +197,36 @@ public class PrescriptionController {
     @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<Void> ajouterMedicamentAPrescription(
             @Parameter(description = "ID de la prescription") @PathVariable Long id,
-            @Parameter(description = "Médicament à ajouter") @Valid @RequestBody MedicamentDTO medicamentDTO) {
-        log.info("Demande d'ajout d'un médicament à la prescription ID: {}", id);
+            @Parameter(description = "ID du médicament à ajouter") @PathVariable Long medicamentId) {
 
-        prescriptionService.ajouterMedicamentAPrescription(id, medicamentDTO);
+        log.info("Demande d'ajout du médicament ID: {} à la prescription ID: {}", medicamentId, id);
+
+        prescriptionService.ajouterMedicamentAPrescription(id, medicamentId);
         return ResponseEntity.noContent().build();
     }
+//    @PostMapping("/{id}/medicaments")
+//    @Operation(summary = "Ajouter un médicament à une prescription",
+//            description = "Ajoute un médicament à une prescription médicale existante")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "204", description = "Médicament ajouté avec succès"),
+//            @ApiResponse(responseCode = "404", description = "Prescription non trouvée")
+//    })
+//    @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
+//    public ResponseEntity<Void> ajouterMedicamentAPrescription(
+//            @PathVariable Long id,
+//            @PathVariable Long medicamentId) {
+//
+//        prescriptionService.ajouterMedicamentAPrescription(id, medicamentId);
+//        return ResponseEntity.noContent().build();
+//    }
+//    public ResponseEntity<Void> ajouterMedicamentAPrescription(
+//            @Parameter(description = "ID de la prescription") @PathVariable Long id,
+//            @Parameter(description = "Médicament à ajouter") @Valid @RequestBody MedicamentDTO medicamentDTO) {
+//        log.info("Demande d'ajout d'un médicament à la prescription ID: {}", id);
+//
+//        prescriptionService.ajouterMedicamentAPrescription(id, medicamentDTO);
+//        return ResponseEntity.noContent().build();
+//    }
 
     @DeleteMapping("/{prescriptionId}/medicaments/{medicamentId}")
     @Operation(summary = "Supprimer un médicament d'une prescription",
@@ -201,7 +235,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "204", description = "Médicament supprimé avec succès"),
             @ApiResponse(responseCode = "404", description = "Prescription ou médicament non trouvé")
     })
-    @PreAuthorize("hasRole('MEDECIN', 'PERSONNEL')")
+    @PreAuthorize("hasAnyRole('MEDECIN', 'PERSONNEL')")
     public ResponseEntity<Void> supprimerMedicamentDePrescription(
             @Parameter(description = "ID de la prescription") @PathVariable Long prescriptionId,
             @Parameter(description = "ID du médicament") @PathVariable Long medicamentId) {

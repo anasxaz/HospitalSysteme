@@ -70,7 +70,7 @@ public class AuthentificationServiceImpl implements AuthentificationService {
                     user.getNom(),              // nom
                     user.getPrenom(),           // prenom
                     user.getEmail(),            // email
-                    user.getProfil().name(),    // role
+                    determineSpecificRole(user),    // role
                     expiresAt                   // expiresAt
             );
 
@@ -254,4 +254,19 @@ public class AuthentificationServiceImpl implements AuthentificationService {
 //            throw new AuthenticationException("Erreur lors de l'inscription");
 //        }
 //    }
+
+    private String determineSpecificRole(User user) {
+        if (user instanceof com.hospital.HospitalSysteme.entity.Admin) {
+            return "ADMIN";
+        } else if (user instanceof com.hospital.HospitalSysteme.entity.Medecin) {
+            return "MEDECIN";
+        } else if (user instanceof com.hospital.HospitalSysteme.entity.Infirmier) {
+            return "INFIRMIER";
+        } else if (user instanceof com.hospital.HospitalSysteme.entity.CadreAdministratif) {
+            return "CADRE_ADMINISTRATIF";
+        } else if (user instanceof com.hospital.HospitalSysteme.entity.Patient) {
+            return "PATIENT";
+        }
+        return "PERSONNEL";
+    }
 }
