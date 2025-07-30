@@ -63,4 +63,8 @@ public interface ExportService {
      * @return Résultat de l'exportation
      */
     ExportResultDTO exportStatistiques(ExportFormat format, String periode);
+
+
+    // AJOUTER cette signature dans votre interface ExportService
+    ExportResultDTO exportPatientsByGroupeSanguin(ExportFormat format, String groupeSanguin);
 }

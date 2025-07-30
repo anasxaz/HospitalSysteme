@@ -1,5 +1,6 @@
 package com.hospital.HospitalSysteme.controller;
 
+import java.util.stream.Collectors;
 import com.hospital.HospitalSysteme.dto.export.ExportOptionsDTO;
 import com.hospital.HospitalSysteme.dto.export.ExportResultDTO;
 import com.hospital.HospitalSysteme.enums.ExportFormat;
@@ -44,61 +45,61 @@ public class ExportController {
 
     // ====================== EXPORTATION GÉNÉRIQUE ======================
 
-    @PostMapping("/data")
-    @Operation(summary = "Exporter des données selon les options",
-            description = "Exporte des données hospitalières selon les options spécifiées (type, format, filtres)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Exportation réussie",
-                    content = @Content(schema = @Schema(implementation = ExportResultDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Options d'exportation invalides"),
-            @ApiResponse(responseCode = "403", description = "Accès refusé"),
-            @ApiResponse(responseCode = "500", description = "Erreur lors de l'exportation")
-    })
-    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN')")
-    public ResponseEntity<ExportResultDTO> exportData(
-            @Parameter(description = "Options d'exportation détaillées")
-            @Valid @RequestBody ExportOptionsDTO options) {
-        log.info("Demande d'exportation de données - Type: {}, Format: {}", options.getType(), options.getFormat());
+//    @PostMapping("/data")
+//    @Operation(summary = "Exporter des données selon les options",
+//            description = "Exporte des données hospitalières selon les options spécifiées (type, format, filtres)")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Exportation réussie",
+//                    content = @Content(schema = @Schema(implementation = ExportResultDTO.class))),
+//            @ApiResponse(responseCode = "400", description = "Options d'exportation invalides"),
+//            @ApiResponse(responseCode = "403", description = "Accès refusé"),
+//            @ApiResponse(responseCode = "500", description = "Erreur lors de l'exportation")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN')")
+//    public ResponseEntity<ExportResultDTO> exportData(
+//            @Parameter(description = "Options d'exportation détaillées")
+//            @Valid @RequestBody ExportOptionsDTO options) {
+//        log.info("Demande d'exportation de données - Type: {}, Format: {}", options.getType(), options.getFormat());
+//
+//        ExportResultDTO result = exportService.exportData(options);
+//
+//        if (result.isSuccess()) {
+//            return ResponseEntity.ok(result);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+//        }
+//    }
 
-        ExportResultDTO result = exportService.exportData(options);
-
-        if (result.isSuccess()) {
-            return ResponseEntity.ok(result);
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
-        }
-    }
-
-    @PostMapping("/download")
-    @Operation(summary = "Télécharger directement un fichier exporté",
-            description = "Génère et télécharge directement un fichier d'exportation selon les options")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Fichier téléchargé avec succès"),
-            @ApiResponse(responseCode = "400", description = "Options d'exportation invalides"),
-            @ApiResponse(responseCode = "403", description = "Accès refusé"),
-            @ApiResponse(responseCode = "500", description = "Erreur lors de l'exportation")
-    })
-    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN')")
-    public ResponseEntity<byte[]> downloadExport(
-            @Parameter(description = "Options d'exportation détaillées")
-            @Valid @RequestBody ExportOptionsDTO options) {
-        log.info("Demande de téléchargement direct - Type: {}, Format: {}", options.getType(), options.getFormat());
-
-        ExportResultDTO result = exportService.exportData(options);
-
-        if (result.isSuccess()) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType(result.getFileType()));
-            headers.setContentDispositionFormData("attachment", result.getFileName());
-            headers.setContentLength(result.getFileSize());
-
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(result.getFileContent());
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+//    @PostMapping("/download")
+//    @Operation(summary = "Télécharger directement un fichier exporté",
+//            description = "Génère et télécharge directement un fichier d'exportation selon les options")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Fichier téléchargé avec succès"),
+//            @ApiResponse(responseCode = "400", description = "Options d'exportation invalides"),
+//            @ApiResponse(responseCode = "403", description = "Accès refusé"),
+//            @ApiResponse(responseCode = "500", description = "Erreur lors de l'exportation")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN')")
+//    public ResponseEntity<byte[]> downloadExport(
+//            @Parameter(description = "Options d'exportation détaillées")
+//            @Valid @RequestBody ExportOptionsDTO options) {
+//        log.info("Demande de téléchargement direct - Type: {}, Format: {}", options.getType(), options.getFormat());
+//
+//        ExportResultDTO result = exportService.exportData(options);
+//
+//        if (result.isSuccess()) {
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.parseMediaType(result.getFileType()));
+//            headers.setContentDispositionFormData("attachment", result.getFileName());
+//            headers.setContentLength(result.getFileSize());
+//
+//            return ResponseEntity.ok()
+//                    .headers(headers)
+//                    .body(result.getFileContent());
+//        } else {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
 
     // ====================== EXPORTATIONS SPÉCIALISÉES ======================
 
@@ -113,24 +114,72 @@ public class ExportController {
     public ResponseEntity<byte[]> exportPatients(
             @Parameter(description = "Format d'exportation (PDF, EXCEL, CSV)")
             @RequestParam(defaultValue = "PDF") ExportFormat format,
-            @Parameter(description = "Nom du patient (filtrage)")
-            @RequestParam(required = false) String nom,
-            @Parameter(description = "Prénom du patient (filtrage)")
-            @RequestParam(required = false) String prenom,
-            @Parameter(description = "Groupe sanguin (filtrage)")
+
+            @Parameter(
+                    description = "Groupe sanguin (filtrage optionnel)",
+                    example = "A+",
+                    schema = @Schema(
+                            type = "string",
+                            allowableValues = {"A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"}
+                    )
+            )
             @RequestParam(required = false) String groupeSanguin) {
-        log.info("Exportation des patients - Format: {}, Filtres: nom={}, prenom={}, groupeSanguin={}",
-                format, nom, prenom, groupeSanguin);
 
-        Map<String, Object> filtres = new HashMap<>();
-        if (nom != null) filtres.put("nom", nom);
-        if (prenom != null) filtres.put("prenom", prenom);
-        if (groupeSanguin != null) filtres.put("groupeSanguin", groupeSanguin);
+        log.info("Exportation des patients - Format: {}, Groupe sanguin: {}", format, groupeSanguin);
 
-        ExportResultDTO result = exportService.exportPatients(format, filtres);
-
+        // UTILISER la nouvelle méthode spécialisée
+        ExportResultDTO result = exportService.exportPatientsByGroupeSanguin(format, groupeSanguin);
         return createDownloadResponse(result);
     }
+//    public ResponseEntity<byte[]> exportPatients(
+//            @Parameter(description = "Format d'exportation (PDF, EXCEL, CSV)")
+//            @RequestParam(defaultValue = "PDF") ExportFormat format,
+//
+//            @Parameter(
+//                    description = "Groupe sanguin (filtrage optionnel)",
+//                    example = "A+",
+//                    schema = @Schema(
+//                            type = "string",
+//                            allowableValues = {"A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"}
+//                    )
+//            )
+//            @RequestParam(required = false) String groupeSanguin) {
+//
+//        log.info("Exportation des patients - Format: {}, Groupe sanguin: {}", format, groupeSanguin);
+//
+//        Map<String, Object> filtres = new HashMap<>();
+//        if (groupeSanguin != null && !groupeSanguin.isEmpty()) {
+//            filtres.put("groupeSanguin", groupeSanguin);
+//        }
+//
+//        ExportResultDTO result = exportService.exportPatients(format, filtres);
+//        return createDownloadResponse(result);
+//    }
+
+
+
+
+//    public ResponseEntity<byte[]> exportPatients(
+//            @Parameter(description = "Format d'exportation (PDF, EXCEL, CSV)")
+//            @RequestParam(defaultValue = "PDF") ExportFormat format,
+//            @Parameter(description = "Nom du patient (filtrage)")
+//            @RequestParam(required = false) String nom,
+//            @Parameter(description = "Prénom du patient (filtrage)")
+//            @RequestParam(required = false) String prenom,
+//            @Parameter(description = "Groupe sanguin (filtrage)")
+//            @RequestParam(required = false) String groupeSanguin) {
+//        log.info("Exportation des patients - Format: {}, Filtres: nom={}, prenom={}, groupeSanguin={}",
+//                format, nom, prenom, groupeSanguin);
+//
+//        Map<String, Object> filtres = new HashMap<>();
+//        if (nom != null) filtres.put("nom", nom);
+//        if (prenom != null) filtres.put("prenom", prenom);
+//        if (groupeSanguin != null) filtres.put("groupeSanguin", groupeSanguin);
+//
+//        ExportResultDTO result = exportService.exportPatients(format, filtres);
+//
+//        return createDownloadResponse(result);
+//    }
 
     @GetMapping("/rendez-vous")
     @Operation(summary = "Exporter les rendez-vous",
@@ -193,19 +242,45 @@ public class ExportController {
     public ResponseEntity<byte[]> exportFactures(
             @Parameter(description = "Format d'exportation (PDF, EXCEL, CSV)")
             @RequestParam(defaultValue = "PDF") ExportFormat format,
+
             @Parameter(description = "Date de début (format: yyyy-MM-dd)")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDebut,
+
             @Parameter(description = "Date de fin (format: yyyy-MM-dd)")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFin,
-            @Parameter(description = "Statut de paiement (EN_ATTENTE, PAYEE, ANNULEE)")
+
+            @Parameter(
+                    description = "Statut de paiement (filtrage optionnel)",
+                    example = "EN_ATTENTE",
+                    schema = @Schema(
+                            type = "string",
+                            allowableValues = {"EN_ATTENTE", "PAYEE", "ANNULEE"}
+                    )
+            )
             @RequestParam(required = false) String statut) {
+
         log.info("Exportation des factures - Format: {}, Période: {} à {}, Statut: {}",
                 format, dateDebut, dateFin, statut);
 
         ExportResultDTO result = exportService.exportFactures(format, dateDebut, dateFin, statut);
-
         return createDownloadResponse(result);
     }
+//    public ResponseEntity<byte[]> exportFactures(
+//            @Parameter(description = "Format d'exportation (PDF, EXCEL, CSV)")
+//            @RequestParam(defaultValue = "PDF") ExportFormat format,
+//            @Parameter(description = "Date de début (format: yyyy-MM-dd)")
+//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDebut,
+//            @Parameter(description = "Date de fin (format: yyyy-MM-dd)")
+//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFin,
+//            @Parameter(description = "Statut de paiement (EN_ATTENTE, PAYEE, ANNULEE)")
+//            @RequestParam(required = false) String statut) {
+//        log.info("Exportation des factures - Format: {}, Période: {} à {}, Statut: {}",
+//                format, dateDebut, dateFin, statut);
+//
+//        ExportResultDTO result = exportService.exportFactures(format, dateDebut, dateFin, statut);
+//
+//        return createDownloadResponse(result);
+//    }
 
     @GetMapping("/statistiques")
     @Operation(summary = "Exporter les statistiques",
@@ -238,57 +313,85 @@ public class ExportController {
             @ApiResponse(responseCode = "403", description = "Accès refusé")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN')")
-    public ResponseEntity<byte[]> quickExport(
-            @Parameter(description = "Type d'exportation (PATIENTS, RENDEZ_VOUS, CONSULTATIONS, etc.)")
-            @PathVariable ExportType type,
-            @Parameter(description = "Format d'exportation (PDF, EXCEL, CSV)")
-            @RequestParam(defaultValue = "PDF") ExportFormat format) {
+    public ResponseEntity<byte[]> quickExport(@PathVariable ExportType type, @RequestParam(defaultValue = "PDF") ExportFormat format) {
         log.info("Export rapide - Type: {}, Format: {}", type, format);
 
         ExportOptionsDTO options = new ExportOptionsDTO();
         options.setType(type);
         options.setFormat(format);
 
-        // Définir des paramètres par défaut selon le type
+        // CORRECTION: Ajouter PLANNING dans le switch
         switch (type) {
             case RENDEZ_VOUS:
             case CONSULTATIONS:
             case FACTURES:
-                // Pour les données temporelles, prendre le mois courant
+            case PLANNING:  // ← AJOUTER CETTE LIGNE
                 options.setDateDebut(LocalDate.now().withDayOfMonth(1));
                 options.setDateFin(LocalDate.now());
                 break;
             default:
-                // Pour les autres types, pas de filtre de date
+                // Pour PATIENTS, MEDICAMENTS, PERSONNEL, STATISTIQUES - pas de dates
                 break;
         }
 
         ExportResultDTO result = exportService.exportData(options);
-
         return createDownloadResponse(result);
     }
+//    public ResponseEntity<byte[]> quickExport(
+//            @Parameter(description = "Type d'exportation (PATIENTS, RENDEZ_VOUS, CONSULTATIONS, etc.)")
+//            @PathVariable ExportType type,
+//            @Parameter(description = "Format d'exportation (PDF, EXCEL, CSV)")
+//            @RequestParam(defaultValue = "PDF") ExportFormat format) {
+//        log.info("Export rapide - Type: {}, Format: {}", type, format);
+//
+//        ExportOptionsDTO options = new ExportOptionsDTO();
+//        options.setType(type);
+//        options.setFormat(format);
+//
+//        // Définir des paramètres par défaut selon le type
+//        switch (type) {
+//            case RENDEZ_VOUS:
+//            case CONSULTATIONS:
+//            case FACTURES:
+//                // Pour les données temporelles, prendre le mois courant
+//                options.setDateDebut(LocalDate.now().withDayOfMonth(1));
+//                options.setDateFin(LocalDate.now());
+//                break;
+////            case PLANNING:  // ← Ajoutez cette ligne
+////                options.setDateDebut(LocalDate.now().withDayOfMonth(1));
+////                options.setDateFin(LocalDate.now());
+////                break;
+//            default:
+//                // Pour les autres types, pas de filtre de date
+//                break;
+//        }
+//
+//        ExportResultDTO result = exportService.exportData(options);
+//
+//        return createDownloadResponse(result);
+//    }
 
     // ====================== EXPORTS PERSONNALISÉS ======================
 
-    @PostMapping("/custom")
-    @Operation(summary = "Export personnalisé avec options avancées",
-            description = "Crée un export personnalisé avec des options de formatage et filtrage avancées")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Export personnalisé réussi"),
-            @ApiResponse(responseCode = "400", description = "Options invalides"),
-            @ApiResponse(responseCode = "403", description = "Accès refusé")
-    })
-    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN')")
-    public ResponseEntity<byte[]> customExport(
-            @Parameter(description = "Options d'exportation personnalisées")
-            @Valid @RequestBody ExportOptionsDTO options) {
-        log.info("Export personnalisé - Type: {}, Format: {}, Filtres: {}",
-                options.getType(), options.getFormat(), options.getFiltresSupplementaires());
-
-        ExportResultDTO result = exportService.exportData(options);
-
-        return createDownloadResponse(result);
-    }
+//    @PostMapping("/custom")
+//    @Operation(summary = "Export personnalisé avec options avancées",
+//            description = "Crée un export personnalisé avec des options de formatage et filtrage avancées")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Export personnalisé réussi"),
+//            @ApiResponse(responseCode = "400", description = "Options invalides"),
+//            @ApiResponse(responseCode = "403", description = "Accès refusé")
+//    })
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CADRE_ADMINISTRATIF', 'MEDECIN')")
+//    public ResponseEntity<byte[]> customExport(
+//            @Parameter(description = "Options d'exportation personnalisées")
+//            @Valid @RequestBody ExportOptionsDTO options) {
+//        log.info("Export personnalisé - Type: {}, Format: {}, Filtres: {}",
+//                options.getType(), options.getFormat(), options.getFiltresSupplementaires());
+//
+//        ExportResultDTO result = exportService.exportData(options);
+//
+//        return createDownloadResponse(result);
+//    }
 
     // ====================== INFORMATIONS SUR LES EXPORTS ======================
 
